@@ -1,4 +1,4 @@
-Showdown Boilerplate
+BlakJack Boilerplate
 ========================================================================
 
 BlakJack Boilerplate is for BlakJack and works with kota's config.

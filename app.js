@@ -409,6 +409,8 @@ process.on('uncaughtException', function (err) {
 
 global.Sockets = require('./sockets.js');
 
+global.Bot = require('./bot.js');
+
 /*********************************************************
  * Set up our last global
  *********************************************************/
@@ -453,3 +455,15 @@ fs.readFile('./logs/uptime.txt', function (err, uptime) {
 		fs.writeFile('./logs/uptime.txt', global.uptimeRecord.toFixed(0));
 	}, (1).hour());
 });
+
+/*********************************************************
+ * Load custom files
+ *********************************************************/
+
+global.Core = require('./core.js').core;
+
+global.Components = require('./components.js');
+
+global.Poll = require('./core.js').core.poll();
+
+global.SysopAccess = require('./core.js').sysopAccess();

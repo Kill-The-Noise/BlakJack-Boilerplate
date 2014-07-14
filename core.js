@@ -98,13 +98,13 @@ var core = exports.core = {
                 if (user.group === ' ') {
                     return '<br>&nbsp;<strong><font color="' + this.color + '">Group:</font></strong>&nbsp;' + 'Regular User';
                 }
-                return '<br>&nbsp;<strong><font color="' + this.color + '">Group:</font></strong>&nbsp;' + Config.groups.bySymbol[targetUser.group].name;
+                return '<br>&nbsp;<strong><font color="' + this.color + '">Group:</font></strong>&nbsp;' + Config.groups.bySymbol[user.group].name;
             }
             var g = Core.stdin('usergroups', user);
             if (g === 0) {
                 return '<br>&nbsp;<strong><font color="' + this.color + '">Group:</font></strong>&nbsp;' + 'Regular User';
             }
-            return '<br>&nbsp;<strong><font color="' + this.color + '">Group:</font></strong>&nbsp;' + Config.groups.bySymbol[targetUser.group].name;
+            return '<br>&nbsp;<strong><font color="' + this.color + '">Group:</font></strong>&nbsp;' + Config.groups.bySymbol[user.group].name;
         },
 
         lastSeen: function (online, user) {

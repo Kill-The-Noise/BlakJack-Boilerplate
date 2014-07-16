@@ -873,14 +873,6 @@ var components = exports.components = {
             Tournaments = require(path.join(__dirname, './', './tournaments/middleend.js'));
             Tournaments.tournaments = runningTournaments;
             
-            this.sendReply('Reloading Trainer Cards...');
-            CommandParser.uncacheTree(path.join(__dirname, './', './trainer-cards.js'));
-            trainerCards = require(path.join(__dirname, './', './trainer-cards.js'));
-            
-            this.sendReply('Reloading casino...');
-            CommandParser.uncacheTree(path.join(__dirname, './', 'casino.js'));
-            dice = require(path.join(__dirname, './', 'casino.js'));
-
             this.sendReply('Reloading Core...');
             CommandParser.uncacheTree(path.join(__dirname, './', './core.js'));
             Core = require(path.join(__dirname, './', './core.js')).core;

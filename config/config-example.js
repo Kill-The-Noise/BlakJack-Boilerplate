@@ -283,7 +283,8 @@ exports.groups = {
 			ip: true,
 			modchat: true,
 			roompromote: '+ ',
-			scavengers: true
+			scavengers: true,
+			tournamentsmoderation: true
 		},
 		'%': {
 			id: 'driver',
@@ -309,7 +310,8 @@ exports.groups = {
 			description: "They can use ! commands like !groups, and talk during moderated chat",
 			inherit: ' ',
 			broadcast: true,
-			joinbattle: true
+			joinbattle: true,
+			tournaments: true
 		},
 		' ': {
 			alts: 's',

@@ -10,7 +10,7 @@
  */
 
 var config = {
-    name: 'Mega Bot',
+    name: 'Blak Bot',
     userid: function () {
         return toId(this.name);
     },

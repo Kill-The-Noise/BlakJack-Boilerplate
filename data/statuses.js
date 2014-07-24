@@ -86,7 +86,7 @@ exports.BattleStatuses = {
 			return false;
 		},
 		onHit: function (target, source, move) {
-			if (move.type === 'Fire' && move.category !== 'Status') {
+			if (move.thawsTarget || move.type === 'Fire' && move.category !== 'Status') {
 				target.cureStatus();
 			}
 		}
@@ -161,15 +161,14 @@ exports.BattleStatuses = {
 	trapped: {
 		noCopy: true,
 		onModifyPokemon: function (pokemon) {
-			if (!this.effectData.source || !this.effectData.source.isActive) {
-				delete pokemon.volatiles['trapped'];
-				return;
-			}
 			pokemon.tryTrap();
 		},
 		onStart: function (target) {
 			this.add('-activate', target, 'trapped');
 		}
+	},
+	trapper: {
+		noCopy: true
 	},
 	partiallytrapped: {
 		duration: 5,
@@ -249,8 +248,8 @@ exports.BattleStatuses = {
 	},
 	choicelock: {
 		onStart: function (pokemon) {
+			if (!this.activeMove.id || this.activeMove.sourceEffect && this.activeMove.sourceEffect !== this.activeMove.id) return false;
 			this.effectData.move = this.activeMove.id;
-			if (!this.effectData.move) return false;
 		},
 		onModifyPokemon: function (pokemon) {
 			if (!pokemon.getItem().isChoice || !pokemon.hasMove(this.effectData.move)) {
@@ -352,6 +351,19 @@ exports.BattleStatuses = {
 		onBasePower: function (basePower, user, target, move) {
 			this.debug('Gem Boost');
 			return this.chainModify([0x14CD, 0x1000]);
+		}
+	},
+	aura: {
+		duration: 1,
+		onBasePowerPriority: 8,
+		onBasePower: function (basePower, user, target, move) {
+			var modifier = 4 / 3;
+			this.debug('Aura Boost');
+			if (user.volatiles['aurabreak']) {
+				modifier = 0.75;
+				this.debug('Aura Boost reverted by Aura Break');
+			}
+			return this.chainModify(modifier);
 		}
 	},
 

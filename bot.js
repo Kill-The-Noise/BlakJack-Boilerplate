@@ -392,7 +392,7 @@ var commands = {
     })(),
 
     maketournament: function (target, room, user) {
-        if (!this.can('maketournament')) return;
+        if (!this.can('ban')) return;
         if (Tournaments.tournaments[room.id]) return this.sendReply('A tournament is already running in the room.');
 
         var parts = target.split(','),

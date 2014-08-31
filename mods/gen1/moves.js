@@ -42,7 +42,7 @@ exports.BattleMovedex = {
 			},
 			onHit: function (target, source, move) {
 				if (source && source !== target && move.category !== 'Physical' && move.category !== 'Special') {
-					damage = this.effectData.totalDamage;
+					var damage = this.effectData.totalDamage;
 					this.effectData.totalDamage += damage;
 					this.effectData.lastDamage = damage;
 					this.effectData.sourcePosition = source.position;
@@ -202,9 +202,9 @@ exports.BattleMovedex = {
 		affectedByImmunities: false,
 		willCrit: false,
 		damageCallback: function (pokemon) {
-			if (pokemon.lastAttackedBy && pokemon.lastAttackedBy.thisTurn
-			&& ((this.getMove(pokemon.lastAttackedBy.move).type === 'Normal' || this.getMove(pokemon.lastAttackedBy.move).type === 'Fighting'))
-			&& this.getMove(pokemon.lastAttackedBy.move).id !== 'seismictoss') {
+			if (pokemon.lastAttackedBy && pokemon.lastAttackedBy.thisTurn &&
+					((this.getMove(pokemon.lastAttackedBy.move).type === 'Normal' || this.getMove(pokemon.lastAttackedBy.move).type === 'Fighting')) &&
+					this.getMove(pokemon.lastAttackedBy.move).id !== 'seismictoss') {
 				return 2 * pokemon.lastAttackedBy.damage;
 			}
 			this.add('-fail', pokemon);
@@ -449,11 +449,12 @@ exports.BattleMovedex = {
 				return;
 			}
 			if (target.newlySwitched && target.speed <= source.speed) {
+				var toLeech;
 				if (target.status === 'tox') {
 					// Stage plus one since leech seed runs before Toxic
-					var toLeech = this.clampIntRange(target.maxhp / 16, 1) * (target.statusData.stage + 1);
+					toLeech = this.clampIntRange(target.maxhp / 16, 1) * (target.statusData.stage + 1);
 				} else {
-					var toLeech = this.clampIntRange(target.maxhp / 16, 1);
+					toLeech = this.clampIntRange(target.maxhp / 16, 1);
 				}
 				var damage = this.damage(toLeech, target, source, 'move: Leech Seed');
 				if (damage) {
@@ -472,11 +473,12 @@ exports.BattleMovedex = {
 					return;
 				}
 				// We check if target has Toxic to increase leeched damage
+				var toLeech;
 				if (pokemon.status === 'tox') {
 					// Stage plus one since leech seed runs before Toxic
-					var toLeech = this.clampIntRange(pokemon.maxhp / 16, 1) * (pokemon.statusData.stage + 1);
+					toLeech = this.clampIntRange(pokemon.maxhp / 16, 1) * (pokemon.statusData.stage + 1);
 				} else {
-					var toLeech = this.clampIntRange(pokemon.maxhp / 16, 1);
+					toLeech = this.clampIntRange(pokemon.maxhp / 16, 1);
 				}
 				var damage = this.damage(toLeech, pokemon, target);
 				if (damage) {
@@ -716,10 +718,18 @@ exports.BattleMovedex = {
 	},
 	skullbash: {
 		inherit: true,
-		effect: {
-			duration: 2,
-			onLockMove: 'skullbash',
-			onStart: function (pokemon) {}
+		onTry: function (attacker, defender, move) {
+			if (attacker.removeVolatile(move.id)) {
+				return;
+			}
+			this.add('-prepare', attacker, move.name, defender);
+			if (!this.runEvent('ChargeMove', attacker, defender, move)) {
+				this.add('-anim', attacker, move.name, defender);
+				attacker.removeVolatile(move.id);
+				return;
+			}
+			attacker.addVolatile('twoturnmove', defender);
+			return null;
 		}
 	},
 	skyattack: {

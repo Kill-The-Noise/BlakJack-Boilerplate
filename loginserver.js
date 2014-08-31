@@ -13,6 +13,7 @@ const LOGIN_SERVER_BATCH_TIME = 1000;
 var http = require("http");
 var url = require('url');
 
+/* global LoginServer: true */
 var LoginServer = module.exports = (function () {
 	function LoginServer(uri) {
 		console.log('Creating LoginServer object for ' + uri + '...');
@@ -227,7 +228,7 @@ var LoginServer = module.exports = (function () {
 	return LoginServer;
 })();
 
-watchFile('./config/custom.css', function (curr, prev) {
+require('fs').watchFile('./config/custom.css', function (curr, prev) {
 	LoginServer.request('invalidatecss', {}, function () {});
 });
 LoginServer.request('invalidatecss', {}, function () {});

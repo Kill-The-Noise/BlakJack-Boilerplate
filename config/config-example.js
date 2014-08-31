@@ -1,10 +1,10 @@
 // The server port - the port to run Pokemon Showdown under
-exports.port = 17000;
+exports.port = 8000;
 
 // The server id - the id specified in the server registration.
 //   This should be set properly especially when there are more than one
 //   pokemon showdown server running from the same IP
-exports.serverId = 'mega';
+exports.serverId = 'ktnleague';
 
 // proxyIps - proxy IPs with trusted X-Forwarded-For headers
 //   This can be either false (meaning not to trust any proxies) or an array
@@ -40,7 +40,7 @@ exports.loginServer = {
 
 // crashGuardEmail - if the server has been running for more than an hour
 // and crashes, send an email using these settings, rather than locking down
-// the server. Uncomment this definition if you wan to use this feature;
+// the server. Uncomment this definition if you want to use this feature;
 // otherwise, all crashes will lock down the server.
 /**exports.crashGuardEmail = {
 	transport: 'SMTP',
@@ -181,7 +181,6 @@ exports.appealUri = '';
 //     - alts: Ability to check alts.
 //     - announce: /announce command.
 //     - ban: Banning and unbanning.
-//     - banword: Banning and unbanning words to be used in usernames.
 //     - broadcast: Broadcast informational commands.
 //     - bypassblocks: Bypass blocks such as your challenge being blocked.
 //     - console: Developer console (also requires IP or userid in the `consoleIps` array).
@@ -248,7 +247,8 @@ exports.groups = {
 			modchatall: true,
 			potd: true,
 			promote: 'u',
-			rangeban: true
+			rangeban: true,
+			tournamentsmanagement: true
 		},
 		'#': {
 			id: 'owner',
@@ -260,7 +260,8 @@ exports.groups = {
 			modchatall: true,
 			privateroom: true,
 			roomdesc: true,
-			roompromote: 'u'
+			roompromote: 'u',
+			tournamentsmanagement: true
 		},
 		'\u2605': {
 			id: 'player',
@@ -284,7 +285,7 @@ exports.groups = {
 			modchat: true,
 			roompromote: '+ ',
 			scavengers: true,
-			tournamentsmoderation: true
+			tournaments: true
 		},
 		'%': {
 			id: 'driver',
@@ -302,6 +303,7 @@ exports.groups = {
 			redirect: true,
 			staff: true,
 			timer: true,
+			tournamentsmoderation: true,
 			warn: true
 		},
 		'+': {

@@ -82,7 +82,7 @@ exports.BattleStatuses = {
 			}
 			if (move.type === 'Fire') {
 				this.debug('rain fire suppress');
-				return basePower * .5;
+				return basePower * 0.5;
 			}
 		}
 	},
@@ -98,7 +98,7 @@ exports.BattleStatuses = {
 			}
 			if (move.type === 'Water') {
 				this.debug('Sunny Day water suppress');
-				return basePower * .5;
+				return basePower * 0.5;
 			}
 		}
 	},
@@ -206,6 +206,54 @@ exports.BattleStatuses = {
 			if (pokemon.ability === 'levitate') {
 				pokemon.ability = 'cursedbody';
 				pokemon.baseAbility = 'cursedbody';
+			}
+		}
+	},
+	mesprit: {
+		// Mesprit: Serene Grace
+		onImmunity: function (type) {
+			if (type === 'Ground') return false;
+		},
+		onStart: function (pokemon) {
+			if (pokemon.ability === 'levitate') {
+				pokemon.ability = 'serenegrace';
+				pokemon.baseAbility = 'serenegrace';
+			}
+		}
+	},
+	uxie: {
+		// Uxie: Synchronize
+		onImmunity: function (type) {
+			if (type === 'Ground') return false;
+		},
+		onStart: function (pokemon) {
+			if (pokemon.ability === 'levitate') {
+				pokemon.ability = 'synchronize';
+				pokemon.baseAbility = 'synchronize';
+			}
+		}
+	},
+	azelf: {
+		// Azelf: Steadfast
+		onImmunity: function (type) {
+			if (type === 'Ground') return false;
+		},
+		onStart: function (pokemon) {
+			if (pokemon.ability === 'levitate') {
+				pokemon.ability = 'steadfast';
+				pokemon.baseAbility = 'steadfast';
+			}
+		}
+	},
+	hydreigon: {
+		// Hydreigon: Sheer Force
+		onImmunity: function (type) {
+			if (type === 'Ground') return false;
+		},
+		onStart: function (pokemon) {
+			if (pokemon.ability === 'levitate') {
+				pokemon.ability = 'sheerforce';
+				pokemon.baseAbility = 'sheerforce';
 			}
 		}
 	},

@@ -219,6 +219,59 @@ exports.BattleMovedex = {
 			}
 		}
 	},
+	"kingsshield": {
+		inherit: true,
+		effect: {
+			duration: 1,
+			onStart: function (target) {
+				this.add('-singleturn', target, 'Protect');
+			},
+			onTryHitPriority: 3,
+			onTryHit: function (target, source, move) {
+				if (target.volatiles.substitute) return;
+				if (move.breaksProtect) {
+					target.removeVolatile('kingsshield');
+					return;
+				}
+				if (move && (move.category === 'Status' || move.isNotProtectable)) return;
+				this.add('-activate', target, 'Protect');
+				var lockedmove = source.getVolatile('lockedmove');
+				if (lockedmove) {
+					// Outrage counter is reset
+					if (source.volatiles['lockedmove'].duration === 2) {
+						delete source.volatiles['lockedmove'];
+					}
+				}
+				if (move.isContact) {
+					this.boost({atk:-2}, source, target, this.getMove("King's Shield"));
+				}
+				return null;
+			}
+		},
+	},
+	"spikyshield": {
+		inherit: true,
+		effect: {
+			duration: 1,
+			onStart: function (target) {
+				this.add('-singleturn', target, 'move: Protect');
+			},
+			onTryHitPriority: 3,
+			onTryHit: function (target, source, move) {
+				if (target.volatiles.substitute) return;
+				if (move.breaksProtect) {
+					target.removeVolatile('spikyshield');
+					return;
+				}
+				if (move && (move.target === 'self' || move.id === 'suckerpunch')) return;
+				this.add('-activate', target, 'move: Protect');
+				if (move.isContact) {
+					this.damage(source.maxhp / 8, source, target);
+				}
+				return null;
+			}
+		},
+	},
 	minimize: {
 		inherit: true,
 		boosts: {
@@ -294,18 +347,18 @@ exports.BattleMovedex = {
 		onTryHit: function (target) {
 			target.removeVolatile('substitute');
 		},
-				onTry: function (attacker, defender, move) {
+		onTry: function (attacker, defender, move) {
 			if (attacker.removeVolatile(move.id)) {
 				return;
 			}
 			this.add('-prepare', attacker, move.name, defender);
+			this.boost({def:1, spd:1, accuracy:1}, attacker, attacker, this.getMove('skullbash'));
 			if (!this.runEvent('ChargeMove', attacker, defender, move)) {
 				this.add('-anim', attacker, move.name, defender);
 				attacker.removeVolatile(move.id);
 				return;
 			}
 			attacker.addVolatile('twoturnmove', defender);
-			this.boost({def:1, spd:1, accuracy:1}, attacker, attacker, this.getMove('skullbash'));
 			return null;
 		},
 		breaksProtect: true
@@ -407,6 +460,23 @@ exports.BattleMovedex = {
 		breaksProtect: true
 	},
 	dive: {
+		inherit: true,
+		basePower: 60,
+		willCrit: true,
+		accuracy: true,
+		onTryHitPriority: 10,
+		onTryHit: function (target) {
+			target.removeVolatile('substitute');
+		},
+		secondary: {
+			chance: 100,
+			boosts: {
+				def: -1
+			}
+		},
+		breaksProtect: true
+	},
+	phantomforce: {
 		inherit: true,
 		basePower: 60,
 		willCrit: true,
@@ -537,6 +607,9 @@ exports.BattleMovedex = {
 	},
 	bide: {
 		inherit: true,
+		onTryHit: function (pokemon) {
+			return this.willAct() && this.runEvent('StallMove', pokemon);
+		},
 		effect: {
 			duration: 2,
 			onLockMove: 'bide',
@@ -1083,6 +1156,7 @@ exports.BattleMovedex = {
 	},
 	steameruption: {
 		inherit: true,
+		accuracy: 100,
 		onModifyMove: function (move) {
 			switch (this.effectiveWeather()) {
 			case 'sunnyday':
@@ -1119,7 +1193,7 @@ exports.BattleMovedex = {
 		category: "Special",
 		isViable: true,
 		priority: 0,
-		isNotProtectable: true,
+		isSoundBased: true,
 		affectedByImmunities: false,
 		onHit: function (target, source) {
 			source.side.addSideCondition('futuremove');
@@ -1134,6 +1208,8 @@ exports.BattleMovedex = {
 				moveData: {
 					basePower: 80,
 					category: "Special",
+					isSoundBased: true,
+					isNotProtectable: true,
 					affectedByImmunities: false,
 					type: 'Normal'
 				}
@@ -1520,10 +1596,6 @@ exports.BattleMovedex = {
 		inherit: true,
 		accuracy: 100
 	},
-	steameruption: {
-		inherit: true,
-		accuracy: 100
-	},
 	snarl: {
 		inherit: true,
 		accuracy: 100
@@ -1619,10 +1691,6 @@ exports.BattleMovedex = {
 	whirlpool: {
 		inherit: true,
 		accuracy: 90
-	},
-	eggbomb: {
-		inherit: true,
-		accuracy: 80
 	},
 	grasswhistle: {
 		inherit: true,
@@ -1724,9 +1792,8 @@ exports.BattleMovedex = {
 		accuracy: 100,
 		onModifyMove: function (move, user) {
 			if (user.illusion) {
-				var illusionMoves = user.illusion.moves.filter(function (illusionMove) {
-					var illusionMove = this.getMove(illusionMove);
-					return illusionMove.category !== 'Status';
+				var illusionMoves = user.illusion.moves.filter(function (move) {
+					return this.getMove(move).category !== 'Status';
 				}, this);
 				if (illusionMoves.length) move.name = this.getMove(illusionMoves.sample()).name;
 			}

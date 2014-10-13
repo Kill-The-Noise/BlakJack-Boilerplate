@@ -166,9 +166,9 @@ var parse = exports.parse = function (message, room, user, connection, levelsDee
 	if (!message || !message.trim().length) return;
 	if (!levelsDeep) {
 		levelsDeep = 0;
-		// if (Config.emergencyLog && (connection.ip === '62.195.195.62' || connection.ip === '86.141.154.222' || connection.ip === '189.134.175.221' || message.length > 2048 || message.length > 256 && message.substr(0, 5) !== '/utm ' && message.substr(0, 5) !== '/trn ')) {
-		if (Config.emergencyLog && (user.userid === 'pindapinda' || connection.ip === '62.195.195.62' || connection.ip === '86.141.154.222' || connection.ip === '189.134.175.221')) {
-			Config.emergencyLog.write('<' + user.name + '@' + connection.ip + '> ' + message + '\n');
+	} else {
+		if (levelsDeep > MAX_PARSE_RECURSION) {
+			return connection.sendTo(room, "Error: Too much recursion");
 		}
 	}
 

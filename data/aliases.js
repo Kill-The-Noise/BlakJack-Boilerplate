@@ -7,6 +7,7 @@ exports.BattleAliases = {
 	"neverused": "NU",
 	"vgc": "VGC 2014",
 	"bh": "Balanced Hackmons",
+	"monotype": "OU Monotype",
 	"createapokemon": "CAP",
 	"cc1v1": "Challenge Cup 1vs1",
 
@@ -113,7 +114,6 @@ exports.BattleAliases = {
 	"skymin": "Shaymin-Sky",
 	"thundurust": "Thundurus-Therian",
 	"tornadust": "Tornadus-Therian",
-	"tornt": "Tornadus-Therian",
 	"wormadamg": "Wormadam-Sandy",
 	"wormadamground": "Wormadam-Sandy",
 	"wormadams": "Wormadam-Trash",
@@ -163,7 +163,6 @@ exports.BattleAliases = {
 	"salac": "Salac Berry",
 	"scarf": "Choice Scarf",
 	"specs": "Choice Specs",
-	"sash": "Focus Sash",
 	"yache": "Yache Berry",
 	"av": "Assault Vest",
 	"assvest": "Assault Vest",

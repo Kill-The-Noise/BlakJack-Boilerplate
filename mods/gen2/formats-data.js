@@ -153,8 +153,7 @@ exports.BattleFormatsData = {
 		eventPokemon: [
 			{"generation":2,"level":5,"moves":["pound","charm","encore","petaldance"]},
 			{"generation":2,"level":5,"moves":["pound","charm","encore","scaryface"]},
-			{"generation":2,"level":5,"moves":["pound","charm","encore","swift"]},
-			{"generation":2,"level":5,"moves":["pound","charm","encore","dizzypunch"]}
+			{"generation":2,"level":5,"moves":["pound","charm","encore","swift"]}
 		],
 		tier: "LC"
 	},
@@ -174,8 +173,7 @@ exports.BattleFormatsData = {
 		eventPokemon: [
 			{"generation":2,"level":5,"moves":["sing","charm","defensecurl","mimic"]},
 			{"generation":2,"level":5,"moves":["sing","charm","defensecurl","petaldance"]},
-			{"generation":2,"level":5,"moves":["sing","charm","defensecurl","scaryface"]},
-			{"generation":2,"level":5,"moves":["sing","charm","defensecurl","dizzypunch"]}
+			{"generation":2,"level":5,"moves":["sing","charm","defensecurl","scaryface"]}
 		],
 		tier: "LC"
 	},
@@ -470,8 +468,7 @@ exports.BattleFormatsData = {
 	},
 	tyrogue: {
 		eventPokemon: [
-			{"generation":2,"level":5,"gender":"M","moves":["tackle","rage"]},
-			{"generation":2,"level":5,"gender":"M","moves":["tackle","dizzypunch"]}
+			{"generation":2,"level":5,"gender":"M","moves":["tackle","rage"]}
 		],
 		tier: "LC"
 	},
@@ -571,8 +568,7 @@ exports.BattleFormatsData = {
 	smoochum: {
 		eventPokemon: [
 			{"generation":2,"level":5,"gender":"F","moves":["pound","lick","metronome"]},
-			{"generation":2,"level":5,"gender":"F","moves":["pound","lick","petaldance"]},
-			{"generation":2,"level":5,"gender":"F","moves":["pound","lick","dizzypunch"]}
+			{"generation":2,"level":5,"gender":"F","moves":["pound","lick","petaldance"]}
 		],
 		tier: "LC"
 	},
@@ -591,8 +587,7 @@ exports.BattleFormatsData = {
 	},
 	magby: {
 		eventPokemon: [
-			{"generation":2,"level":5,"moves":["ember","feintattack"]},
-			{"generation":2,"level":5,"moves":["ember","dizzypunch"]}
+			{"generation":2,"level":5,"moves":["ember","feintattack"]}
 		],
 		tier: "LC"
 	},
@@ -714,8 +709,7 @@ exports.BattleFormatsData = {
 	},
 	dratini: {
 		eventPokemon: [
-			{"generation":2,"level":5,"moves":["wrap","leer","hydropump"]},
-			{"generation":2,"level":15,"moves":["wrap","thunder","twister","extremespeed"]}
+			{"generation":2,"level":5,"moves":["wrap","leer","hydropump"]}
 		],
 		tier: "LC"
 	},
@@ -1122,7 +1116,6 @@ exports.BattleFormatsData = {
 		eventPokemon: [
 			{"generation":2,"level":5,"moves":["leechseed","confusion","healbell","recover"]}
 		],
-		unobtainableShiny: true,
 		tier: "Uber"
 	}
 };

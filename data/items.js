@@ -181,7 +181,7 @@ exports.BattleItems = {
 			type: "Ground"
 		},
 		onUpdate: function (pokemon) {
-			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
+			if (pokemon.hp <= pokemon.maxhp / 4|| (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
@@ -1454,7 +1454,7 @@ exports.BattleItems = {
 		spritenum: 153,
 		num: 497,
 		gen: 2,
-		desc: "A Poke Ball that makes caught Pokemon more friendly."
+		desc: "A Poké Ball that makes caught Pokémon more friendly."
 	},
 	"fullincense": {
 		id: "fullincense",
@@ -3687,9 +3687,9 @@ exports.BattleItems = {
 			basePower: 30
 		},
 		onAfterMoveSecondarySelfPriority: -1,
-		onAfterMoveSecondarySelf: function (pokemon, target, move) {
-			if (move.category !== 'Status' && pokemon.lastDamage > 0) {
-				this.heal(pokemon.lastDamage / 8, pokemon);
+		onAfterMoveSecondarySelf: function (source, target) {
+			if (source.lastDamage > 0) {
+				this.heal(source.lastDamage / 8, source);
 			}
 		},
 		num: 253,

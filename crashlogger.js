@@ -11,7 +11,7 @@
 module.exports = (function () {
 	var lastCrashLog = 0;
 	return function (err, description) {
-		console.log("\nCRASH: " + (err.stack || err) + "\n");
+		console.log("\nCRASH: " + err.stack + "\n");
 		require('fs').createWriteStream('logs/errors.txt', {'flags': 'a'}).on("open", function (fd) {
 			this.write("\n" + err.stack + "\n");
 			this.end();
@@ -28,10 +28,10 @@ module.exports = (function () {
 					Config.crashGuardEmail.options
 				);
 				transport.sendMail({
-					from: Config.crashguardemail.from,
-					to: Config.crashguardemail.to,
-					subject: Config.crashguardemail.subject,
-					text: description + ' crashed with this stack trace:\n' + (err.stack || err)
+					from: Config.crashGuardEmail.from,
+					to: Config.crashGuardEmail.to,
+					subject: Config.crashGuardEmail.subject,
+					text: description + ' crashed with this stack trace:\n' + err.stack
 				});
 			} catch (e) {
 				// could not send an email...

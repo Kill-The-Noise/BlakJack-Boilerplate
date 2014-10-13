@@ -506,11 +506,6 @@ exports.BattleMovedex = {
 					this.debug('damaged this turn');
 					this.effectData.hurt = true;
 				}
-			},
-			onFoeSwitchOut: function (pokemon) {
-				if (pokemon.position === this.effectData.position) {
-					this.effectData.hurt = false;
-				}
 			}
 		},
 		isContact: true,
@@ -818,7 +813,9 @@ exports.BattleMovedex = {
 				do {
 					this.effectData.index++;
 					if (this.effectData.index >= 6) break;
-				} while (!pokemon.side.pokemon[this.effectData.index] || pokemon.side.pokemon[this.effectData.index].fainted || pokemon.side.pokemon[this.effectData.index].status);
+				} while (!pokemon.side.pokemon[this.effectData.index] ||
+						pokemon.side.pokemon[this.effectData.index].fainted ||
+						pokemon.side.pokemon[this.effectData.index].status);
 			}
 		},
 		secondary: false,
@@ -2284,7 +2281,7 @@ exports.BattleMovedex = {
 			if (!source.hasType('Ghost')) {
 				delete move.volatileStatus;
 				delete move.onHit;
-				move.self = {boosts: {atk:1, def:1, spe:-1}};
+				move.self = { boosts: {atk:1, def:1, spe:-1}};
 				move.target = move.nonGhostTarget;
 			}
 		},
@@ -2366,8 +2363,8 @@ exports.BattleMovedex = {
 		accuracy: 100,
 		basePower: 80,
 		category: "Special",
-		desc: "No additional effect. Hits adjacent foes.",
-		shortDesc: "Deals damage to all adjacent foes.",
+		desc: "Deals damage to all adjacent foes.",
+		shortDesc: "No additional effect. Hits adjacent foes.",
 		id: "dazzlinggleam",
 		isViable: true,
 		name: "Dazzling Gleam",
@@ -3589,7 +3586,7 @@ exports.BattleMovedex = {
 		},
 		onHit: function (target, source) {
 			if (target.setAbility(source.ability)) {
-				this.add('-ability', target, target.ability, '[from] move: Entrainment');
+				this.add('-ability', target, target.ability);
 				return;
 			}
 			return false;
@@ -3955,8 +3952,7 @@ exports.BattleMovedex = {
 		priority: 0,
 		isContact: true,
 		isBiteAttack: true,
-		secondaries: [
-			{
+		secondaries: [ {
 				chance: 10,
 				status: 'brn'
 			}, {
@@ -4933,7 +4929,7 @@ exports.BattleMovedex = {
 		basePower: 0,
 		category: "Status",
 		desc: "Causes one adjacent target's Ability to be rendered ineffective as long as it remains active. If the target uses Baton Pass, the replacement will remain under this effect. Fails if the target's Ability is Multitype or Stance Change. Pokemon protected by Magic Coat or the Ability Magic Bounce are unaffected and instead use this move themselves.",
-		shortDesc: "Nullifies the target's Ability.",
+		shortDesc: "Nullifies the target's Ability",
 		id: "gastroacid",
 		name: "Gastro Acid",
 		pp: 10,
@@ -5109,7 +5105,7 @@ exports.BattleMovedex = {
 				this.debug('40 bp');
 				return 40;
 			}
-			this.debug('20 bp');
+				this.debug('20 bp');
 			return 20;
 		},
 		category: "Special",
@@ -5825,7 +5821,7 @@ exports.BattleMovedex = {
 			},
 			onSwitchInPriority: 1,
 			onSwitchIn: function (target) {
-				if (target.position !== this.effectData.sourcePosition) {
+				if (target.position != this.effectData.sourcePosition) {
 					return;
 				}
 				if (!target.fainted) {
@@ -5995,7 +5991,7 @@ exports.BattleMovedex = {
 				this.effectData.multiplier = 1.5;
 				this.add('-singleturn', target, 'Helping Hand', '[of] ' + source);
 			},
-			onRestart: function (target, source) {
+			onRestart: function(target, source) {
 				this.effectData.multiplier *= 1.5;
 				this.add('singleturn', target, 'Helping Hand', '[of] ' + source);
 			},
@@ -6684,8 +6680,7 @@ exports.BattleMovedex = {
 		priority: 0,
 		isContact: true,
 		isBiteAttack: true,
-		secondaries: [
-			{
+		secondaries: [ {
 				chance: 10,
 				status: 'frz'
 			}, {
@@ -7086,7 +7081,7 @@ exports.BattleMovedex = {
 		accuracy: true,
 		basePower: 0,
 		category: "Status",
-		desc: "Protects the user from attacks. Contactors get their Attack lowered by 2 stages. Priority +4.",
+		desc: "Protects the user from attacks. Contactors get their Attack lowered by 2 stages. Priority +4",
 		shortDesc: "Protects user from attacks. Contactors get -Atk.",
 		id: "kingsshield",
 		isViable: true,
@@ -7605,7 +7600,7 @@ exports.BattleMovedex = {
 			},
 			onSwitchInPriority: 1,
 			onSwitchIn: function (target) {
-				if (target.position !== this.effectData.sourcePosition) {
+				if (target.position != this.effectData.sourcePosition) {
 					return;
 				}
 				if (!target.fainted) {
@@ -8257,7 +8252,7 @@ exports.BattleMovedex = {
 			}
 			var move = '';
 			if (moves.length) {
-				moves.sort(function (a, b) {return a.num - b.num;});
+				moves.sort(function(a,b){return a.num-b.num;});
 				move = moves[this.random(moves.length)].id;
 			}
 			if (!move) {
@@ -9780,7 +9775,7 @@ exports.BattleMovedex = {
 		basePower: 40,
 		category: "Physical",
 		desc: "Hitting a target raises Attack by 1 stage. Damage is boosted to 1.2x by the Ability Iron Fist.",
-		shortDesc: "Hitting a target raises Attack by 1.",
+		shortDesc: "Hitting a target raises Attack by 1",
 		id: "poweruppunch",
 		name: "Power-Up Punch",
 		pp: 20,
@@ -11029,7 +11024,7 @@ exports.BattleMovedex = {
 		isSnatchable: true,
 		heal: [1, 2],
 		self: {
-			volatileStatus: 'roost'
+			volatileStatus: 'roost',
 		},
 		effect: {
 			duration: 1,
@@ -11363,7 +11358,7 @@ exports.BattleMovedex = {
 		basePower: 70,
 		category: "Physical",
 		desc: "Deals damage to one adjacent target with a 30% chance to cause a secondary effect on the target based on the battle terrain. Lowers accuracy by 1 stage in Wi-Fi battles. (In-game: Causes sleeping in grass, lowers Speed by 1 stage in puddles, lowers Attack by 1 stage on water, flinching in caves, lowers accuracy by 1 stage on rocky ground and sand, freezing on snow and ice, and causes paralysis everywhere else.) The secondary effect chance is not affected by the Ability Serene Grace.",
-		shortDesc: "Effect varies with terrain. (30% accuracy lower 1.)",
+		shortDesc: "Effect varies with terrain. (30% accuracy lower 1)",
 		id: "secretpower",
 		name: "Secret Power",
 		pp: 20,
@@ -11930,7 +11925,7 @@ exports.BattleMovedex = {
 				this.add('-activate', defender, 'Protect');
 				return null;
 			}
-			if (defender.volatiles['bounce'] || defender.volatiles['dig'] || defender.volatiles['dive'] || defender.volatiles['fly'] || defender.volatiles['phantomforce'] || defender.volatiles['shadowforce'] || defender.volatiles['skydrop']) {
+			if (defender.volatiles['bounce'] || defender.volatiles['dig'] || defender.volatiles['dive'] || defender.volatiles['fly'] || defender.volatiles['shadowforce'] || defender.volatiles['skydrop']) {
 				this.add('-miss', attacker, defender);
 				return null;
 			}
@@ -12596,7 +12591,7 @@ exports.BattleMovedex = {
 				var side = pokemon.side;
 				if (!pokemon.runImmunity('Ground')) return;
 				var damageAmounts = [0, 3, 4, 6]; // 1/8, 1/6, 1/4
-				this.damage(damageAmounts[this.effectData.layers] * pokemon.maxhp / 24);
+				var damage = this.damage(damageAmounts[this.effectData.layers] * pokemon.maxhp / 24);
 			}
 		},
 		secondary: false,
@@ -12713,8 +12708,13 @@ exports.BattleMovedex = {
 				this.add('-sidestart', side, 'move: Stealth Rock');
 			},
 			onSwitchIn: function (pokemon) {
-				var typeMod = this.clampIntRange(this.getEffectiveness('Rock', pokemon), -6, 6);
-				this.damage(pokemon.maxhp * Math.pow(2, typeMod) / 8);
+				var typeMod = this.getEffectiveness('Rock', pokemon);
+				var factor = 8;
+				if (typeMod === 1) factor = 4;
+				if (typeMod >= 2) factor = 2;
+				if (typeMod === -1) factor = 16;
+				if (typeMod <= -2) factor = 32;
+				var damage = this.damage(pokemon.maxhp / factor);
 			}
 		},
 		secondary: false,
@@ -13815,8 +13815,7 @@ exports.BattleMovedex = {
 		priority: 0,
 		isContact: true,
 		isBiteAttack: true,
-		secondaries: [
-			{
+		secondaries: [ {
 				chance: 10,
 				status: 'par'
 			}, {

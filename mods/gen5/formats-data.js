@@ -1683,7 +1683,6 @@ exports.BattleFormatsData = {
 			{"generation":3,"level":30,"moves":["healbell","safeguard","ancientpower","futuresight"]},
 			{"generation":4,"level":50,"moves":["leafstorm","recover","nastyplot","healingwish"],"pokeball":"cherishball"}
 		],
-		unobtainableShiny: true,
 		tier: "OU"
 	},
 	treecko: {
@@ -3111,7 +3110,6 @@ exports.BattleFormatsData = {
 			{"generation":4,"level":100,"moves":["judgment","roaroftime","spacialrend","shadowforce"],"pokeball":"cherishball"},
 			{"generation":5,"level":100,"moves":["recover","hyperbeam","perishsong","judgment"]}
 		],
-		unobtainableShiny: true,
 		tier: "Uber"
 	},
 	arceusbug: {
@@ -3258,6 +3256,12 @@ exports.BattleFormatsData = {
 		],
 		tier: "Uber"
 	},
+	arceusunknown: {
+		eventPokemon: [
+			{"generation":4,"level":100,"moves":["judgment","roaroftime","spacialrend","shadowforce"],"pokeball":"cherishball"},
+		],
+		tier: "Uber"
+	},
 	victini: {
 		randomBattleMoves: ["vcreate","boltstrike","uturn","psychic","focusblast","blueflare"],
 		eventPokemon: [
@@ -3265,7 +3269,6 @@ exports.BattleFormatsData = {
 			{"generation":5,"level":50,"moves":["vcreate","fusionflare","fusionbolt","searingshot"],"pokeball":"cherishball"},
 			{"generation":5,"level":100,"moves":["vcreate","blueflare","boltstrike","glaciate"],"pokeball":"cherishball"}
 		],
-		unobtainableShiny: true,
 		tier: "UU"
 	},
 	snivy: {
@@ -4004,7 +4007,6 @@ exports.BattleFormatsData = {
 		eventPokemon: [
 			{"generation":5,"level":100,"moves":["blueflare","fusionflare","mist","dracometeor"],"pokeball":"cherishball"}
 		],
-		unobtainableShiny: true,
 		tier: "Uber"
 	},
 	zekrom: {
@@ -4012,7 +4014,6 @@ exports.BattleFormatsData = {
 		eventPokemon: [
 			{"generation":5,"level":100,"moves":["boltstrike","fusionbolt","haze","outrage"],"pokeball":"cherishball"}
 		],
-		unobtainableShiny: true,
 		tier: "Uber"
 	},
 	landorus: {
@@ -4043,7 +4044,6 @@ exports.BattleFormatsData = {
 			{"generation":5,"level":50,"moves":["sacredsword","hydropump","aquajet","swordsdance"],"pokeball":"cherishball"}
 		],
 		dreamWorldPokeball: 'cherishball',
-		unobtainableShiny: true,
 		tier: "OU"
 	},
 	meloetta: {
@@ -4053,7 +4053,6 @@ exports.BattleFormatsData = {
 			{"generation":5,"level":50,"moves":["round","teeterdance","psychic","closecombat"],"pokeball":"cherishball"}
 		],
 		dreamWorldPokeball: 'cherishball',
-		unobtainableShiny: true,
 		tier: "UU"
 	},
 	genesect: {

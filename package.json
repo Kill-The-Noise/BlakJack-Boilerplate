@@ -5,7 +5,7 @@
     "sugar": "1.4.1",
     "node-static": "0.7.4",
     "sockjs": "0.3.9",
-    "es6-shim": "0.16.0"
+    "es6-shim": "0.16.0",
     "request": "2.36.0"
   },
   "optionalDependencies": {
@@ -51,6 +51,7 @@
     "gulp-util": "~2.2.14",
     "gulp": "~3.8.7",
     "gulp-jshint": "~1.8.4",
+    "gulp-jscs": "~1.1.2",
     "gulp-replace": "~0.4.0",
     "jshint-stylish": "~0.1.5"
   }

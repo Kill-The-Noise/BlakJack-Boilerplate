@@ -100,7 +100,7 @@ exports.BattleMovedex = {
 		desc: "The user's type changes to match the original type of one of its four moves besides this move, at random, but not either of its current types. Fails if the user cannot change its type, or if this move would only be able to select one of the user's current types.",
 		shortDesc: "Changes user's type to match a known move.",
 		onHit: function (target) {
-			var possibleTypes = target.moveset.map(function (val){
+			var possibleTypes = target.moveset.map(function (val) {
 				var move = this.getMove(val.id);
 				if (move.id !== 'conversion' && !target.hasType(move.type)) {
 					return move.type;
@@ -125,7 +125,7 @@ exports.BattleMovedex = {
 				return false;
 			}
 			this.useMove(this.lastMove, pokemon);
-		},
+		}
 	},
 	cottonspore: {
 		inherit: true,
@@ -554,7 +554,7 @@ exports.BattleMovedex = {
 		secondary: {
 			chance: 30,
 			status: 'tox'
-		},
+		}
 	},
 	poisongas: {
 		inherit: true,
@@ -608,7 +608,7 @@ exports.BattleMovedex = {
 				}
 				return null;
 			}
-		},
+		}
 	},
 	ragepowder: {
 		num: 476,
@@ -851,7 +851,7 @@ exports.BattleMovedex = {
 		},
 		onHitSide: function (side, source) {
 			source.addVolatile('stall');
-		},
+		}
 	},
 	whirlpool: {
 		inherit: true,

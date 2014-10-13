@@ -327,7 +327,7 @@ var commands = exports.commands = {
 			if (!room.introMessage) return this.sendReply("This room does not have an introduction set.");
 			this.sendReplyBox(room.introMessage);
 			if (!this.broadcasting && user.can('declare', null, room)) {
-				this.sendReply('Source:');]
+				this.sendReply('Source:');
 				this.sendReplyBox('<code>' + Tools.escapeHTML(room.introMessage) + '</code>');
 			}
 			return;

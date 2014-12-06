@@ -116,7 +116,7 @@ function canTalk(user, room, connection, message) {
 		}
 
 		// remove zalgo
-		message = message.replace(/[\u0300-\u036f\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]{3,}/g, '');
+		message = message.replace(/[\u0300-\u036f\u0483-\u0489\u064b-\u065f\u0670\u0E31\u0E34-\u0E3A\u0E47-\u0E4E]{3,}/g, '');
 
 		if (room && room.id === 'lobby') {
 			var normalized = message.trim();
@@ -129,8 +129,8 @@ function canTalk(user, room, connection, message) {
 			user.lastMessageTime = Date.now();
 		}
 
-		if (Config.chatFilter) {
-			return Config.chatFilter(user, room, connection, message);
+		if (Config.chatfilter) {
+			return Config.chatfilter(message, user, room, connection);
 		}
 		return message;
 	}
@@ -346,7 +346,24 @@ var parse = exports.parse = function (message, room, user, connection, levelsDee
 			}
 		};
 
-		var result = commandHandler.call(context, target, room, user, connection, cmd, message);
+		var result;
+		try {
+			result = commandHandler.call(context, target, room, user, connection, cmd, message);
+		} catch (err) {
+			var stack = err.stack + '\n\n' +
+					'Additional information:\n' +
+					'user = ' + user.name + '\n' +
+					'room = ' + room.id + '\n' +
+					'message = ' + message;
+			var fakeErr = {stack: stack};
+
+			if (!require('./crashlogger.js')(fakeErr, 'A chat command')) {
+				var ministack = ("" + err.stack).escapeHTML().split("\n").slice(0, 2).join("<br />");
+				Rooms.lobby.send('|html|<div class="broadcast-red"><b>POKEMON SHOWDOWN HAS CRASHED:</b> ' + ministack + '</div>');
+			} else {
+				context.sendReply('|html|<div class="broadcast-red"><b>Pokemon Showdown crashed!</b><br />Don\'t worry, we\'re working on fixing it.</div>');
+			}
+		}
 		if (result === undefined) result = false;
 
 		return result;

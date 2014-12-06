@@ -52,8 +52,51 @@ var jsHintOptions = {
 	}
 };
 
-gulp.task('lint', function () {
-	var directories = ['./*.js', './data/*.js', './mods/*/*.js', './tournaments/*.js', './chat-plugins/*.js', './config/*.js'];
+var jscsOptions = {
+	"excludeFiles": ["./**/pokedex.js", "./**/formats-data.js", "./**/learnsets.js", "./**/learnsets-g6.js", "./config/config.js"],
+
+	"preset": "google",
+
+	"requireCurlyBraces": null,
+	"requireCamelCaseOrUpperCaseIdentifiers": null,
+	"maximumLineLength": null,
+	"validateIndentation": "\t",
+	"validateQuoteMarks": null,
+
+	"disallowMixedSpacesAndTabs": "smart",
+	"disallowMultipleVarDecl": null,
+
+	"requireSpaceAfterKeywords": true,
+	"requireSpaceBeforeBinaryOperators": true,
+	"disallowSpacesInAnonymousFunctionExpression": null,
+	"requireSpacesInAnonymousFunctionExpression": {
+		"beforeOpeningRoundBrace": true
+	},
+
+	"validateJSDoc": null,
+
+	"requireBlocksOnNewline": 1,
+	"disallowPaddingNewlinesInBlocks": true,
+	"disallowEmptyBlocks": true,
+	"disallowNewlineBeforeBlockStatements": true,
+
+	"requireCommaBeforeLineBreak": true,
+	"requireOperatorBeforeLineBreak": true,
+
+	"disallowSpaceAfterObjectKeys": true,
+	"disallowSpaceAfterPrefixUnaryOperators": true,
+	"disallowSpaceBeforePostfixUnaryOperators": true,
+
+	"disallowTrailingComma": true,
+	"validateLineBreaks": require('os').EOL.replace(/\r/g, 'CR').replace(/\n/g, 'LF'),
+	"validateParameterSeparator": ", ",
+
+	"requireCapitalizedConstructors": true
+};
+
+gulp.task('data', function () {
+	var directories = ['./data/*.js', './mods/*/*.js'];
+	jsHintOptions['es3'] = true;
 
 	// Replacing `var` with `let` is sort of a hack that stops jsHint from
 	// complaining that I'm using `var` like `let` should be used, but

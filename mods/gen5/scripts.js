@@ -505,68 +505,68 @@ exports.BattleScripts = {
 					}
 				}
 
-				var rejectAbility = false;
-				if (ability === 'Blaze' && !counter['blaze']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Overgrow' && !counter['overgrow']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Swarm' && !counter['swarm']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Torrent' && !counter['torrent']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Contrary' && !counter['contrary']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Technician' && !counter['technician']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Skill Link' && !counter['skilllink']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Iron Fist' && !counter['ironfist']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Adaptability' && !counter['adaptability']) {
-					rejectAbility = true;
-				}
-				if ((ability === 'Rock Head' || ability === 'Reckless') && !counter['recoil']) {
-					rejectAbility = true;
-				}
-				if ((ability === 'No Guard' || ability === 'Compoundeyes') && !counter['inaccurate']) {
-					rejectAbility = true;
-				}
-				if ((ability === 'Sheer Force' || ability === 'Serene Grace') && !counter['sheerforce']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Hustle' && !counter['hustle']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Simple' && !setupType && !hasMove['flamecharge'] && !hasMove['stockpile']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Prankster' && !counter['Status']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Defiant' && !counter['Physical'] && !hasMove['batonpass']) {
-					rejectAbility = true;
-				}
-				// below 2 checks should be modified, when it becomes possible, to check if the team contains rain or sun
-				if (ability === 'Swift Swim' && !hasMove['raindance']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Chlorophyll' && !hasMove['sunnyday']) {
-					rejectAbility = true;
-				}
-				if (ability === 'Moody' && template.id !== 'bidoof') {
-					rejectAbility = true;
-				}
-				if (ability === 'Lightningrod' && template.types.indexOf('Ground') >= 0) {
-					rejectAbility = true;
-				}
+			var rejectAbility = false;
+			if (ability === 'Blaze' && !counter['blaze']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Overgrow' && !counter['overgrow']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Swarm' && !counter['swarm']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Torrent' && !counter['torrent']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Contrary' && !counter['contrary']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Technician' && !counter['technician']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Skill Link' && !counter['skilllink']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Iron Fist' && !counter['ironfist']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Adaptability' && !counter['adaptability']) {
+				rejectAbility = true;
+			}
+			if ((ability === 'Rock Head' || ability === 'Reckless') && !counter['recoil']) {
+				rejectAbility = true;
+			}
+			if ((ability === 'No Guard' || ability === 'Compoundeyes') && !counter['inaccurate']) {
+				rejectAbility = true;
+			}
+			if ((ability === 'Sheer Force' || ability === 'Serene Grace') && !counter['sheerforce']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Hustle' && !counter['hustle']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Simple' && !setupType && !hasMove['flamecharge'] && !hasMove['stockpile']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Prankster' && !counter['Status']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Defiant' && !counter['Physical'] && !hasMove['batonpass']) {
+				rejectAbility = true;
+			}
+			// below 2 checks should be modified, when it becomes possible, to check if the team contains rain or sun
+			if (ability === 'Swift Swim' && !hasMove['raindance']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Chlorophyll' && !hasMove['sunnyday']) {
+				rejectAbility = true;
+			}
+			if (ability === 'Moody' && template.id !== 'bidoof') {
+				rejectAbility = true;
+			}
+			if (ability === 'Lightning Rod' && template.types.indexOf('Ground') >= 0) {
+				rejectAbility = true;
+			}
 
 				if (rejectAbility) {
 					if (ability === ability1.name) { // or not

@@ -170,7 +170,7 @@ exports.BattleMovedex = {
 				return false;
 			},
 			onEnd: function (pokemon) {
-				this.add('-message', pokemon.name + ' is no longer disabled! (placeholder)');
+				this.add('-end', pokemon, 'move: Disable');
 			},
 			onBeforeMove: function (attacker, defender, move) {
 				if (move.id === this.effectData.move) {
@@ -567,14 +567,14 @@ exports.BattleMovedex = {
 	skillswap: {
 		inherit: true,
 		onHit: function (target, source) {
-			var targetAbility = target.ability;
-			var sourceAbility = source.ability;
-			if (!target.setAbility(sourceAbility) || !source.setAbility(targetAbility)) {
-				target.ability = targetAbility;
-				source.ability = sourceAbility;
+			var targetAbility = this.getAbility(target.ability);
+			var sourceAbility = this.getAbility(source.ability);
+			if (targetAbility.id === sourceAbility.id) {
 				return false;
 			}
 			this.add('-activate', source, 'move: Skill Swap');
+			source.setAbility(targetAbility);
+			target.setAbility(sourceAbility);
 		}
 	},
 	spikes: {
@@ -607,7 +607,7 @@ exports.BattleMovedex = {
 		priority: 0,
 		isContact: true,
 		beforeMoveCallback: function (pokemon) {
-			this.add('-message', pokemon.name + ' has no moves left! (placeholder)');
+			this.add('-activate', pokemon.name, 'move: Struggle');
 		},
 		onModifyMove: function (move) {
 			move.type = '???';

@@ -9,22 +9,22 @@ exports.BattleFormats = {
 	standard: {
 		effectType: 'Banlist',
 		ruleset: ['Sleep Clause Mod', 'Species Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'HP Percentage Mod'],
-		banlist: ['Unreleased', 'Illegal', 'Huntail + Shell Smash + Sucker Punch', 'Leavanny + Knock Off + Sticky Web', 'Sylveon + Hyper Voice + Heal Bell + Wish + Baton Pass']
+		banlist: ['Unreleased', 'Illegal']
 	},
 	standardnext: {
 		effectType: 'Banlist',
 		ruleset: ['Sleep Clause Mod', 'Species Clause', 'OHKO Clause', 'HP Percentage Mod'],
-		banlist: ['Illegal', 'Soul Dew', 'Huntail + Shell Smash + Sucker Punch', 'Leavanny + Knock Off + Sticky Web', 'Sylveon + Hyper Voice + Heal Bell + Wish + Baton Pass']
+		banlist: ['Illegal', 'Soul Dew']
 	},
 	standardubers: {
 		effectType: 'Banlist',
 		ruleset: ['Sleep Clause Mod', 'Species Clause', 'Moody Clause', 'OHKO Clause', 'Endless Battle Clause', 'HP Percentage Mod'],
-		banlist: ['Unreleased', 'Illegal', 'Huntail + Shell Smash + Sucker Punch', 'Leavanny + Knock Off + Sticky Web', 'Sylveon + Hyper Voice + Heal Bell + Wish + Baton Pass']
+		banlist: ['Unreleased', 'Illegal']
 	},
 	standardgbu: {
 		effectType: 'Banlist',
 		ruleset: ['Species Clause', 'Item Clause'],
-		banlist: ['Unreleased', 'Illegal', 'Soul Dew', 'Huntail + Shell Smash + Sucker Punch', 'Leavanny + Knock Off + Sticky Web', 'Sylveon + Hyper Voice + Heal Bell + Wish + Baton Pass',
+		banlist: ['Unreleased', 'Illegal', 'Soul Dew',
 			'Mewtwo',
 			'Mew',
 			'Lugia',
@@ -59,15 +59,16 @@ exports.BattleFormats = {
 	standarddoubles: {
 		effectType: 'Banlist',
 		ruleset: ['Species Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Abilities Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'HP Percentage Mod'],
-		banlist: ['Unreleased', 'Illegal', 'Huntail + Shell Smash + Sucker Punch', 'Leavanny + Knock Off + Sticky Web', 'Sylveon + Hyper Voice + Heal Bell + Wish + Baton Pass']
+		banlist: ['Unreleased', 'Illegal']
 	},
 	pokemon: {
 		effectType: 'Banlist',
-		validateSet: function (set, format, isNonstandard) {
+		validateSet: function (set, format) {
 			var item = this.getItem(set.item);
 			var template = this.getTemplate(set.species);
 			var problems = [];
 			var totalEV = 0;
+			var allowCAP = !!(format && format.banlistTable && format.banlistTable['allowcap']);
 
 			if (set.species === set.name) delete set.name;
 			if (template.gen > this.gen) {
@@ -85,7 +86,7 @@ exports.BattleFormats = {
 					var move = this.getMove(set.moves[i]);
 					if (move.gen > this.gen) {
 						problems.push(move.name + ' does not exist in gen ' + this.gen + '.');
-					} else if (!isNonstandard && move.isNonstandard) {
+					} else if (!allowCAP && move.isNonstandard) {
 						problems.push(move.name + ' is not a real move.');
 					}
 				}
@@ -100,7 +101,7 @@ exports.BattleFormats = {
 				problems.push((set.name || set.species) + ' is higher than level 100.');
 			}
 
-			if (!isNonstandard) {
+			if (!allowCAP || template.tier !== 'CAP') {
 				if (template.isNonstandard) {
 					problems.push(set.species + ' is not a real Pokemon.');
 				}
@@ -145,23 +146,28 @@ exports.BattleFormats = {
 			}
 			set.moves = moves;
 
-			if (template.requiredItem) {
-				if (template.isMega) {
-					// Mega evolutions evolve in-battle
-					set.species = template.baseSpecies;
-					var baseAbilities = Tools.getTemplate(set.species).abilities;
-					var niceAbility = false;
-					for (var i in baseAbilities) {
-						if (baseAbilities[i] === set.ability) {
-							niceAbility = true;
-							break;
-						}
+			if (template.isMega) {
+				// Mega evolutions evolve in-battle
+				set.species = template.baseSpecies;
+				var baseAbilities = Tools.getTemplate(set.species).abilities;
+				var niceAbility = false;
+				for (var i in baseAbilities) {
+					if (baseAbilities[i] === set.ability) {
+						niceAbility = true;
+						break;
 					}
-					if (!niceAbility) set.ability = baseAbilities['0'];
 				}
-				if (item.name !== template.requiredItem) {
-					problems.push((set.name || set.species) + ' needs to hold ' + template.requiredItem + '.');
-				}
+				if (!niceAbility) set.ability = baseAbilities['0'];
+			} else if (template.isPrimal) {
+				// Primal Reversion happens in-battle
+				set.species = template.baseSpecies;
+				set.ability = Tools.getTemplate(set.species).abilities['0'];
+			}
+			if (template.requiredItem && item.name !== template.requiredItem) {
+				problems.push((set.name || set.species) + ' needs to hold ' + template.requiredItem + '.');
+			}
+			if (template.requiredMove && set.moves.indexOf(toId(template.requiredMove)) < 0) {
+				problems.push((set.name || set.species) + ' needs to have the move ' + template.requiredMove + '.');
 			}
 			if (template.num === 351) { // Castform
 				set.species = 'Castform';
@@ -224,12 +230,6 @@ exports.BattleFormats = {
 				set.species = 'Aegislash';
 			}
 			return problems;
-		}
-	},
-	cappokemon: {
-		effectType: 'Rule',
-		validateSet: function (set, format) {
-			return this.getEffect('Pokemon').validateSet.call(this, set, format, true);
 		}
 	},
 	kalospokedex: {
@@ -530,6 +530,18 @@ exports.BattleFormats = {
 				case 'Water':
 					if (teamHas['damprock']) return ["Damp Rock is banned from Water monotype teams."];
 				}
+			}
+		}
+	},
+	megarayquazabanmod: {
+		effectType: 'Rule',
+		onStart: function () {
+			this.add('rule', 'Mega Rayquaza Ban Mod: You cannot mega evolve Rayquaza');
+			for (var i = 0; i < this.sides[0].pokemon.length; i++) {
+				if (this.sides[0].pokemon[i].speciesid === 'rayquaza') this.sides[0].pokemon[i].canMegaEvo = false;
+			}
+			for (var i = 0; i < this.sides[1].pokemon.length; i++) {
+				if (this.sides[1].pokemon[i].speciesid === 'rayquaza') this.sides[1].pokemon[i].canMegaEvo = false;
 			}
 		}
 	}

@@ -10,23 +10,27 @@ exports.BattleScripts = {
 			this.add('debug', activity);
 		}
 	},
-	// getStat callback for gen 1 stat dealing
-	getStatCallback: function (stat, statName, pokemon) {
+	/**
+	 * We deal with gen 1 stats using the getStatCallback which is called always that we get a stat.
+	 * We add here a specific unboosted argument to use it with crits, as in gen 1 we need this
+	 * specific callback to deal with screen stats.
+	 */
+	getStatCallback: function (stat, statName, pokemon, unboosted) {
 		// Hard coded Reflect and Light Screen boosts
-		if (pokemon.volatiles['reflect'] && statName === 'def') {
+		if (pokemon.volatiles['reflect'] && statName === 'def' && !unboosted) {
 			this.debug('Reflect doubles Defense');
 			stat *= 2;
-			// Max on reflect is 1024
-			if (stat > 1024) stat = 1024;
+			// If the defense is higher than 1024, it is rolled over. The min is always 1.
+			if (stat > 1024) stat -= 1024;
 			if (stat < 1) stat = 1;
-		} else if (pokemon.volatiles['lightscreen'] && statName === 'spd') {
+		} else if (pokemon.volatiles['lightscreen'] && statName === 'spd' && !unboosted) {
 			this.debug('Light Screen doubles Special Defense');
 			stat *= 2;
-			// Max on reflect is 1024
-			if (stat > 1024) stat = 1024;
+			// If the special defense is higher than 1024, it is rolled over. The min is always 1.
+			if (stat > 1024) stat -= 1024;
 			if (stat < 1) stat = 1;
 		} else {
-			// Gen 1 caps stats at 999 and min is 1
+			// Gen 1 normally caps stats at 999 and min is 1.
 			if (stat > 999) stat = 999;
 			if (stat < 1) stat = 1;
 		}
@@ -96,8 +100,8 @@ exports.BattleScripts = {
 							if (pokemon.moveset[m].id === move.id) usedMovePos = m;
 						}
 						if (usedMovePos > -1 && pokemon.moveset[usedMovePos].pp === 0) {
-							// If we were on the middle of the 0 PP sequence, the PPs get reset
-							pokemon.moveset[usedMovePos].pp = pokemon.moveset[usedMovePos].maxpp;
+							// If we were on the middle of the 0 PP sequence, the PPs get reset to 63.
+							pokemon.moveset[usedMovePos].pp = 63;
 						} else {
 							// Otherwise, plain reduct
 							pokemon.deductPP(move, null, target);
@@ -661,9 +665,13 @@ exports.BattleScripts = {
 		var attack = attacker.getStat(atkType);
 		var defense = defender.getStat(defType);
 
+		// In the event of a critical hit, the ofense and defense changes are ignored.
+		// Also, level is doubled in damage calculation.
 		if (move.crit) {
 			move.ignoreOffensive = true;
 			move.ignoreDefensive = true;
+			level *= 2;
+			if (!suppressMessages) this.add('-crit', target);
 		}
 		if (move.ignoreOffensive) {
 			this.debug('Negating (sp)atk boost/penalty.');
@@ -680,12 +688,6 @@ exports.BattleScripts = {
 		// S is the Stab modifier, T is the type effectiveness modifier, R is random between 217 and 255
 		// The max damage is 999
 		var baseDamage = Math.min(Math.floor(Math.floor(Math.floor(2 * level / 5 + 2) * attack * basePower / defense) / 50), 997) + 2;
-
-		// Crit damage addition (usually doubling)
-		if (move.crit) {
-			if (!suppressMessages) this.add('-crit', target);
-			baseDamage = this.modify(baseDamage, move.critModifier || 2);
-		}
 
 		// STAB damage bonus, the "???" type never gets STAB
 		if (type !== '???' && pokemon.hasType(type)) {

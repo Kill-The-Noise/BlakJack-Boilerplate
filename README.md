@@ -53,9 +53,6 @@ Once you get your server up and running, you can manage certain settings with th
 License
 ------------------------------------------------------------------------
 
-<<<<<<< HEAD
-Pokémon Showdown's server is distributed under the terms of the [MIT License][7].
-=======
 Pokémon Showdown's server is distributed under the terms of the [MIT License][8].
 
   [8]: https://github.com/Zarel/Pokemon-Showdown/blob/master/LICENSE
@@ -82,6 +79,5 @@ Retired Staff
 - Mathieu Dias-Martins [Marty-D] - Research (game mechanics), Development
 
 Contributors
->>>>>>> upstream/master
 
   [7]: https://github.com/Zarel/Pokemon-Showdown/blob/master/LICENSE

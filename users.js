@@ -282,16 +282,7 @@ Users.socketConnect = function (worker, workerid, socketid, ip) {
 		if (hosts && hosts[0]) {
 			user.latestHost = hosts[0];
 			if (Config.hostfilter) Config.hostfilter(hosts[0], user);
-			if (user.named && !user.locked && user.group === Config.groupsranking[0]) {
-				var shortHost = Users.shortenHost(hosts[0]);
-				if (lockedDomains[shortHost]) {
-					user.send("|popup|Your ISP is temporarily locked from talking in chats, battles, and PMing regular users.");
-					lockedDomainsUsers[shortHost][user.userid] = 1;
-					user.locked = '#range';
-					user.updateIdentity();
-				}
-			}
-		}
+		}	
 	});
 
 	user.joinRoom('global', connection);

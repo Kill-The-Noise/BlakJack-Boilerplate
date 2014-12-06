@@ -594,7 +594,7 @@ exports.BattleFormats = {
                                 }
                         }
                 }
-        },
+        }
 	megarayquazabanmod: {
 		effectType: 'Rule',
 		onStart: function () {

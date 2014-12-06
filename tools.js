@@ -131,7 +131,7 @@ module.exports = (function () {
 			timid: {name:"Timid", plus:'spe', minus:'atk'}
 		};
 	}
-	Tools.loadMods = function() {
+	Tools.loadMods = function () {
 		if (Tools.modsLoaded) return;
 		var parentMods = {};
 
@@ -673,7 +673,7 @@ module.exports = (function () {
 
 				var ld = this.levenshtein(cmpTarget, word.toLowerCase(), maxLd);
 				if (ld <= maxLd) {
-					searchResults.push({ word: word, ld: ld });
+					searchResults.push({word: word, ld: ld});
 				}
 			}
 		}
@@ -777,7 +777,7 @@ module.exports = (function () {
 			}
 
 			// level
-			if (set.level && set.level != 100) {
+			if (set.level && set.level !== 100) {
 				buf += '|' + set.level;
 			} else {
 				buf += '|';

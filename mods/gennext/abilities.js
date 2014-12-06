@@ -38,7 +38,7 @@ exports.BattleAbilities = {
 		}
 	},
 	"thickfat": {
-		inherit:true,
+		inherit: true,
 		onImmunity: function (type, pokemon) {
 			if (type === 'hail') return false;
 		},
@@ -53,10 +53,10 @@ exports.BattleAbilities = {
 				this.add('-message', "The attack was weakened by Thick Fat!");
 				return this.chainModify(0.5);
 			}
-		},
+		}
 	},
 	"marvelscale": {
-		inherit:true,
+		inherit: true,
 		onImmunity: function (type, pokemon) {
 			if (type === 'hail') return false;
 		}
@@ -255,7 +255,7 @@ exports.BattleAbilities = {
 				this.add('-message', "The attack was weakened by Heatproof!");
 				return basePower / 2;
 			}
-		},
+		}
 	},
 	"reckless": {
 		inherit: true,
@@ -568,7 +568,6 @@ exports.BattleAbilities = {
 			pokemon.addVolatile('shadowtag');
 		},
 		effect: {
-			duration: 1,
 			onFoeModifyPokemon: function (pokemon) {
 				if (pokemon.ability !== 'shadowtag') {
 					pokemon.tryTrap(true);

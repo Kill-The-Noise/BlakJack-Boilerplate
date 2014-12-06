@@ -1,5 +1,5 @@
 exports.BattleScripts = {
-	init: function() {
+	init: function () {
 		for (var i in this.data.Pokedex) {
 			var tier = '';
 			var adjustment = 0;
@@ -16,6 +16,7 @@ exports.BattleScripts = {
 				break;
 			case 'BL3':
 			case 'NU':
+			case 'PU':
 			case 'NFE':
 			case 'LC Uber':
 			case 'LC':

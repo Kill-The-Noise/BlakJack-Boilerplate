@@ -180,7 +180,7 @@ var parse = exports.parse = function (message, room, user, connection, levelsDee
 		message = '/evalbattle ' + message.substr(4);
 	}
 
-	if (message.substr(0, 2) !== '//' && message.substr(0, 1) === '/') {
+	if (message.charAt(0) === '/' && message.charAt(1) !== '/') {
 		var spaceIndex = message.indexOf(' ');
 		if (spaceIndex > 0) {
 			cmd = message.substr(1, spaceIndex - 1);
@@ -189,7 +189,7 @@ var parse = exports.parse = function (message, room, user, connection, levelsDee
 			cmd = message.substr(1);
 			target = '';
 		}
-	} else if (message.substr(0, 1) === '!') {
+	} else if (message.charAt(0) === '!') {
 		var spaceIndex = message.indexOf(' ');
 		if (spaceIndex > 0) {
 			cmd = message.substr(0, spaceIndex);
@@ -295,9 +295,6 @@ var parse = exports.parse = function (message, room, user, connection, levelsDee
 				return true;
 			},
 			parse: function (message) {
-				if (levelsDeep > MAX_PARSE_RECURSION) {
-					return this.sendReply("Error: Too much recursion");
-				}
 				return parse(message, room, user, connection, levelsDeep + 1);
 			},
 			canTalk: function (message, relevantRoom) {
@@ -389,8 +386,14 @@ var parse = exports.parse = function (message, room, user, connection, levelsDee
 		}
 	}
 
+	if (message.charAt(0) === '/' && message.charAt(1) !== '/') {
+		message = '/' + message;
+	}
 	message = canTalk(user, room, connection, message);
 	if (!message) return false;
+	if (message.charAt(0) === '/' && message.charAt(1) !== '/') {
+		return parse(message, room, user, connection, levelsDeep + 1);
+	}
 
 	if (user.authenticated && global.tells) {
 		var alts = user.getAlts();
@@ -402,9 +405,6 @@ var parse = exports.parse = function (message, room, user, connection, levelsDee
 			}
 		});
 	}
-
-	if (!Bot.parse.processChatData(user, room, connection, message)) return false;
-	if (!Core.processChatData(user, room, connection, message)) return false;
 
 	return message;
 };

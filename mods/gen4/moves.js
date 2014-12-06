@@ -74,9 +74,7 @@ exports.BattleMovedex = {
 				do {
 					this.effectData.index++;
 					if (this.effectData.index >= 6) break;
-				} while (!pokemon.side.pokemon[this.effectData.index] ||
-					pokemon.side.pokemon[this.effectData.index].fainted ||
-					pokemon.side.pokemon[this.effectData.index].status);
+				} while (!pokemon.side.pokemon[this.effectData.index] || pokemon.side.pokemon[this.effectData.index].fainted || pokemon.side.pokemon[this.effectData.index].status);
 			},
 			onModifyAtkPriority: 5,
 			onModifyAtk: function (atk, pokemon) {
@@ -203,7 +201,7 @@ exports.BattleMovedex = {
 			if (!source.hasType('Ghost')) {
 				delete move.volatileStatus;
 				delete move.onHit;
-				move.self = { boosts: {atk:1, def:1, spe:-1}};
+				move.self = {boosts: {atk:1, def:1, spe:-1}};
 				move.target = move.nonGhostTarget;
 			} else if (target.volatiles['substitute']) {
 				delete move.volatileStatus;
@@ -219,30 +217,7 @@ exports.BattleMovedex = {
 	detect: {
 		inherit: true,
 		//desc: "",
-		priority: 3,
-		effect: {
-			duration: 1,
-			onStart: function (target) {
-				this.add('-singleturn', target, 'Protect');
-			},
-			onTryHitPriority: 3,
-			onTryHit: function (target, source, move) {
-				if (move.breaksProtect) {
-					target.removeVolatile('Protect');
-					return;
-				}
-				if (move && (move.target === 'self' || move.isNotProtectable)) return;
-				this.add('-activate', target, 'Protect');
-				var lockedmove = source.getVolatile('lockedmove');
-				if (lockedmove) {
-					// Outrage counter is NOT reset
-					if (source.volatiles['lockedmove'].trueDuration >= 2) {
-						source.volatiles['lockedmove'].duration = 2;
-					}
-				}
-				return null;
-			}
-		}
+		priority: 3
 	},
 	disable: {
 		inherit: true,
@@ -392,7 +367,7 @@ exports.BattleMovedex = {
 	},
 	explosion: {
 		inherit: true,
-		basePower: 500,
+		basePower: 500
 		//desc: ""
 	},
 	extremespeed: {
@@ -492,7 +467,7 @@ exports.BattleMovedex = {
 			},
 			onSwitchInPriority: -1,
 			onSwitchIn: function (target) {
-				if (target.position != this.effectData.sourcePosition) {
+				if (target.position !== this.effectData.sourcePosition) {
 					return;
 				}
 				if (target.hp > 0) {
@@ -781,30 +756,7 @@ exports.BattleMovedex = {
 	protect: {
 		inherit: true,
 		//desc: "",
-		priority: 3,
-		effect: {
-			duration: 1,
-			onStart: function (target) {
-				this.add('-singleturn', target, 'Protect');
-			},
-			onTryHitPriority: 3,
-			onTryHit: function (target, source, move) {
-				if (move.breaksProtect) {
-					target.removeVolatile('Protect');
-					return;
-				}
-				if (move && (move.target === 'self' || move.isNotProtectable)) return;
-				this.add('-activate', target, 'Protect');
-				var lockedmove = source.getVolatile('lockedmove');
-				if (lockedmove) {
-					// Outrage counter is NOT reset
-					if (source.volatiles['lockedmove'].trueDuration >= 2) {
-						source.volatiles['lockedmove'].duration = 2;
-					}
-				}
-				return null;
-			}
-		}
+		priority: 3
 	},
 	psychup: {
 		inherit: true,
@@ -855,7 +807,7 @@ exports.BattleMovedex = {
 	},
 	selfdestruct: {
 		inherit: true,
-		basePower: 400,
+		basePower: 400
 		//desc: ""
 	},
 	sketch: {
@@ -886,12 +838,12 @@ exports.BattleMovedex = {
 		onHit: function (target, source) {
 			var targetAbility = target.ability;
 			var sourceAbility = source.ability;
-			if (targetAbility === sourceAbility) {
+			if (!target.setAbility(sourceAbility) || !source.setAbility(targetAbility)) {
+				target.ability = targetAbility;
+				source.ability = sourceAbility;
 				return false;
 			}
 			this.add('-activate', source, 'move: Skill Swap');
-			source.setAbility(targetAbility);
-			target.setAbility(sourceAbility);
 		}
 	},
 	spikes: {
@@ -1022,7 +974,7 @@ exports.BattleMovedex = {
 		sideCondition: 'Wish',
 		effect: {
 			duration: 2,
-			onResidualOrder: 0,
+			onResidualOrder: 2,
 			onEnd: function (side) {
 				var target = side.active[this.effectData.sourcePosition];
 				if (!target.fainted) {

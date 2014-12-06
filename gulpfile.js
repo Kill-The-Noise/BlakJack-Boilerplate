@@ -2,10 +2,12 @@ var gulp = require('gulp');
 var jshintStylish = require('jshint-stylish');
 var gutil = require('gulp-util'); // Currently unused, but gulp strongly suggested I install...
 var jshint = require('gulp-jshint');
+var jscs = require('gulp-jscs');
 var replace = require('gulp-replace');
 
 var jsHintOptions = {
 	"nonbsp": true,
+	"nonew": true,
 	"noarg": true,
 	"loopfunc": true,
 	"latedef": 'nofunc',
@@ -15,7 +17,6 @@ var jsHintOptions = {
 	"undef": true,
 
 	// style
-	// "indent": true,
 	"smarttabs": true,
 	"trailing": true,
 	"newcap": true,
@@ -24,7 +25,7 @@ var jsHintOptions = {
 	"evil": true,
 	"esnext": true,
 	"node": true,
-	"eqeqeq": false,
+	"eqeqeq": true,
 
 	"globals": {
 		"Config": false,
@@ -103,20 +104,24 @@ gulp.task('data', function () {
 	// without having to deal with iffy `let` support.
 
 	return gulp.src(directories)
+		.pipe(jscs(jscsOptions))
 		.pipe(replace(/\bvar\b/g, 'let'))
 		.pipe(jshint(jsHintOptions))
 		.pipe(jshint.reporter(jshintStylish))
-		.pipe(jshint.reporter('fail'));
+		.pipe(jshint.reporter('fail'))
+		.pipe(jscs(jscsOptions));
 });
 
 gulp.task('fastlint', function () {
 	var directories = ['./*.js', './tournaments/*.js', './chat-plugins/*.js', './config/*.js'];
+	delete jsHintOptions['es3'];
 
 	return gulp.src(directories)
+		.pipe(jscs(jscsOptions))
 		.pipe(replace(/\bvar\b/g, 'let'))
 		.pipe(jshint(jsHintOptions))
-		.pipe(jshint.reporter(jshintStylish))
-		.pipe(jshint.reporter('fail'));
+		.pipe(jshint.reporter(jshintStylish));
 });
 
-gulp.task('default', ['lint']);
+gulp.task('default', ['fastlint', 'data']);
+gulp.task('lint', ['fastlint', 'data']);

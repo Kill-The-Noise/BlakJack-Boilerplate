@@ -864,7 +864,7 @@ var commands = exports.commands = {
 		this.addModCommand("" + user.name + " unbanned the " + (target.charAt(target.length - 1) === '*' ? "IP range" : "IP") + ": " + target);
 	},
 
-\	rangelock: function (target, room, user) {
+	rangelock: function (target, room, user) {
 		if ((user.locked || user.mutedRooms[room.id]) && !user.can('hotpatch')) return this.sendReply("You cannot do this while unable to talk.");
 		if (!target) return this.sendReply("Please specify a domain to lock.");
 		if (!this.can('rangeban')) return false;

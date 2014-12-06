@@ -73,10 +73,10 @@ SimulatorProcess.processes.push(new SimulatorProcess());
 
 var slice = Array.prototype.slice;
 
-var Battle = (function (){
+var Battle = (function () {
 	function Battle(id, format, rated, room) {
 		if (battles[id]) {
-			throw new Error("Battle with ID "+id+" already exists.");
+			throw new Error("Battle with ID " + id + " already exists.");
 		}
 
 		this.id = id;
@@ -86,7 +86,6 @@ var Battle = (function (){
 		this.playerids = [null, null];
 		this.playerTable = {};
 		this.requests = {};
-		this.field = {}; // Bot battling AI
 
 		this.process = SimulatorProcess.acquire();
 
@@ -174,7 +173,6 @@ var Battle = (function (){
 			var rqid = lines[3];
 			if (player) {
 				this.requests[player.userid] = lines[4];
-				this.field[player.userid] = JSON.parse(this.requests[player.userid]); // Bot battling AI
 				player.sendTo(this.id, '|request|' + lines[4]);
 			}
 			if (rqid !== this.rqid) {
@@ -236,6 +234,9 @@ var Battle = (function (){
 			delete this.players[slot].battles[this.id];
 		}
 		if (user) {
+			if (user.battles[this.id]) {
+				return false;
+			}
 			user.battles[this.id] = true;
 		}
 		this.players[slot] = (user || null);
@@ -280,6 +281,7 @@ var Battle = (function (){
 		}
 		// console.log('joining: ' + user.name + ' ' + slot);
 		if (this.players[slot] || slot >= this.players.length) return false;
+		if (user === this.players[0] || user === this.players[1]) return false;
 
 		for (var i = 0; i < user.connections.length; i++) {
 			var connection = user.connections[i];

@@ -92,8 +92,8 @@ var bannedIps = Users.bannedIps = Object.create(null);
 var bannedUsers = Object.create(null);
 var lockedIps = Users.lockedIps = Object.create(null);
 var lockedUsers = Object.create(null);
-var lockedDomains = Users.lockedDomains = Object.create(null);
-var lockedDomainsUsers = Object.create(null);
+var lockedRanges = Users.lockedRanges = Object.create(null);
+var rangelockedUsers = Object.create(null);
 
 /**
  * Searches for IP in table.
@@ -174,42 +174,50 @@ function unlock(name, unlocked, noRecurse) {
 	}
 	return unlocked;
 }
-function lockDomain(domain) {
-	if (lockedDomains[domain]) return;
-	lockedDomainsUsers[domain] = {};
+function lockRange(range, ip) {
+	if (lockedRanges[range]) return;
+	rangelockedUsers[range] = {};
+	if (ip) {
+		lockedIps[range] = range;
+		ip = range.slice(0, -1);
+	}
 	for (var i in users) {
-		if (!users[i].named || users[i].locked || users[i].group !== Config.groupsranking[0]) continue;
-		var shortHost = Users.shortenHost(users[i].latestHost);
-		if (domain === shortHost) {
-			lockedDomainsUsers[domain][users[i].userid] = 1;
-			users[i].locked = '#range';
-			users[i].send("|popup|Your ISP is temporarily locked from talking in chats, battles, and PMing regular users.");
-			users[i].updateIdentity();
+		var curUser = users[i];
+		if (!curUser.named || curUser.locked || curUser.group !== Config.groupsranking[0]) continue;
+		if (ip) {
+			if (!curUser.latestIp.startsWith(ip)) continue;
+		} else {
+			if (range !== Users.shortenHost(curUser.latestHost)) continue;
 		}
+		rangelockedUsers[range][curUser.userid] = 1;
+		curUser.locked = '#range';
+		curUser.send("|popup|You are in a range that has been temporarily locked from talking in chats and PMing regular users.");
+		curUser.updateIdentity();
 	}
 
 	var time = 90 * 60 * 1000;
-	lockedDomains[domain] = setTimeout(function () {
-		unlockDomain(domain);
+	lockedRanges[range] = setTimeout(function () {
+		unlockRange(range);
 	}, time);
 }
-function unlockDomain(domain) {
-	if (!lockedDomains[domain]) return;
-	clearTimeout(lockedDomains[domain]);
-	for (var i in lockedDomainsUsers[domain]) {
+function unlockRange(range) {
+	if (!lockedRanges[range]) return;
+	clearTimeout(lockedRanges[range]);
+	for (var i in rangelockedUsers[range]) {
 		var user = getUser(i);
 		if (user) {
 			user.locked = false;
 			user.updateIdentity();
 		}
 	}
-	delete lockedDomains[domain];
-	delete lockedDomainsUsers[domain];
+	if (lockedIps[range]) delete lockedIps[range];
+	delete lockedRanges[range];
+	delete rangelockedUsers[range];
 }
 Users.unban = unban;
 Users.unlock = unlock;
-Users.lockDomain = lockDomain;
-Users.unlockDomain = unlockDomain;
+Users.lockRange = lockRange;
+Users.unlockRange = unlockRange;
 
 /*********************************************************
  * Routing
@@ -282,7 +290,16 @@ Users.socketConnect = function (worker, workerid, socketid, ip) {
 		if (hosts && hosts[0]) {
 			user.latestHost = hosts[0];
 			if (Config.hostfilter) Config.hostfilter(hosts[0], user);
-		}	
+			if (user.named && !user.locked && user.group === Config.groups.default.global) {
+				var shortHost = Users.shortenHost(hosts[0]);
+				if (lockedRanges[shortHost]) {
+					user.send("|popup|You are in a range that has been temporarily locked from talking in chats and PMing regular users.");
+					rangelockedUsers[shortHost][user.userid] = 1;
+					user.locked = '#range';
+					user.updateIdentity();
+				}
+			}
+		}
 	});
 
 	user.joinRoom('global', connection);
@@ -557,8 +574,12 @@ User = (function () {
 			if (room.auth[this.userid]) {
 				return room.auth[this.userid] + this.name;
 			}
-			if (room.isPrivate) {
-				return Config.groups.default[room.type + 'Room'] + this.name;
+			var room = Rooms.rooms[roomid];
+			if (room && room.auth) {
+				if (room.auth[this.userid]) {
+					return room.auth[this.userid] + this.name;
+				}
+				if (room.isPrivate === true) return ' ' + this.name;
 			}
 		}
 		return this.group + this.name;
@@ -584,15 +605,15 @@ User = (function () {
 		if (room && room.auth) {
 			if (room.auth[this.userid]) {
 				group = room.auth[this.userid];
-			} else if (room.isPrivate) {
-				group = Config.groups.default[room.type + 'Room'];
+			} else if (room.isPrivate === true) {
+				group = ' ';
 			}
 
 			if (target) {
 				if (room.auth[target.userid]) {
 					targetGroup = room.auth[target.userid];
-				} else if (room.isPrivate) {
-					targetGroup = Config.groups.default[room.type + 'Room'];
+				} else if (room.isPrivate === true) {
+					targetGroup = ' ';
 				}
 			}
 		}
@@ -666,6 +687,32 @@ User = (function () {
 			this.mmrCache = {};
 		}
 
+		if (authenticated && userid in bannedUsers) {
+			var bannedUnder = '';
+			if (bannedUsers[userid] !== userid) bannedUnder = ' under the username ' + bannedUsers[userid];
+			this.send("|popup|Your username (" + name + ") is banned" + bannedUnder + "'. Your ban will expire in a few days." + (Config.appealurl ? " Or you can appeal at:\n" + Config.appealurl : ""));
+			this.ban(true, userid);
+			return;
+		}
+		if (authenticated && userid in lockedUsers) {
+			var bannedUnder = '';
+			if (lockedUsers[userid] !== userid) bannedUnder = ' under the username ' + lockedUsers[userid];
+			this.send("|popup|Your username (" + name + ") is locked" + bannedUnder + "'. Your lock will expire in a few days." + (Config.appealurl ? " Or you can appeal at:\n" + Config.appealurl : ""));
+			this.lock(true, userid);
+		}
+		if (this.group === Config.groups.default.global) {
+			var range = this.locked || Users.shortenHost(this.latestHost);
+			if (lockedRanges[range]) {
+				this.send("|popup|You are in a range that has been temporarily locked from talking in chats and PMing regular users.");
+				rangelockedUsers[range][this.userid] = 1;
+				this.locked = '#range';
+				this.updateIdentity();
+			}
+		} else if (this.locked && lockedRanges[this.locked]) {
+			this.locked = false;
+			this.updateIdentity();
+		}
+
 		this.name = name;
 		var oldid = this.userid;
 		delete users[oldid];
@@ -673,20 +720,6 @@ User = (function () {
 		users[userid] = this;
 		this.authenticated = !!authenticated;
 		this.forceRenamed = !!forcible;
-
-		if (authenticated && userid in bannedUsers) {
-			var bannedUnder = '';
-			if (bannedUsers[userid] !== userid) bannedUnder = ' under the username ' + bannedUsers[userid];
-			this.send("|popup|Your username (" + name + ") is banned" + bannedUnder + "'. Your ban will expire in a few days." + (Config.appealurl ? " Or you can appeal at:\n" + Config.appealurl : ""));
-			this.ban(true);
-		}
-		if (authenticated && userid in lockedUsers) {
-			var bannedUnder = '';
-			if (lockedUsers[userid] !== userid) bannedUnder = ' under the username ' + lockedUsers[userid];
-			this.send("|popup|Your username (" + name + ") is locked" + bannedUnder + "'. Your lock will expire in a few days." + (Config.appealurl ? " Or you can appeal at:\n" + Config.appealurl : ""));
-			this.lock(true);
-		}
-		
 
 		for (var i = 0; i < this.connections.length; i++) {
 			//console.log('' + name + ' renaming: socket ' + i + ' of ' + this.connections.length);
@@ -915,9 +948,9 @@ User = (function () {
 				} else if (body === '4') {
 					this.autoconfirmed = userid;
 				} else if (body === '5') {
-					this.lock();
+					this.lock(false, userid);
 				} else if (body === '6') {
-					this.ban();
+					this.ban(false, userid);
 				}
 			}
 			if (users[userid] && users[userid] !== this) {
@@ -1019,7 +1052,7 @@ User = (function () {
 			}
 			this.roomCount[i]++;
 			if (room.battle) {
-				room.battle.resendRequest(this);
+				room.battle.resendRequest(connection);
 			}
 		}
 	};
@@ -1099,25 +1132,22 @@ User = (function () {
 		this.clearChatQueue();
 		var connection = null;
 		this.markInactive();
-		for (var i = 0; i < this.connections.length; i++) {
+		for (var i = this.connections.length - 1; i >= 0; i--) {
 			// console.log('DESTROY: ' + this.userid);
 			connection = this.connections[i];
 			for (var j in connection.rooms) {
 				this.leaveRoom(connection.rooms[j], connection, true);
 			}
 			connection.destroy();
-			--this.ips[connection.ip];
 		}
 		if (this.connections.length) {
 			// should never happen
-			console.log('!! failed to drop all connections for ' + this.userid);
-			this.connections = [];
+			throw new Error("Failed to drop all connections for " + this.userid);
 		}
 		for (var i in this.roomCount) {
 			if (this.roomCount[i] > 0) {
 				// should never happen.
-				console.log('!! room miscount: ' + i + ' not left');
-				Rooms.get(i, 'lobby').onLeave(this);
+				throw new Error("Room miscount: " + i + " not left for " + this.userid);
 			}
 		}
 		this.roomCount = {};
@@ -1258,7 +1288,7 @@ User = (function () {
 		}
 
 		for (var ip in this.ips) {
-			lockedIps[ip] = this.userid;
+			lockedIps[ip] = userid;
 		}
 		if (this.autoconfirmed) lockedUsers[this.autoconfirmed] = this.userid;
 		if (this.authenticated) lockedUsers[this.userid] = this.userid;
@@ -1274,26 +1304,27 @@ User = (function () {
 			if (room.staffRoom && !this.can('staff')) return false;
 			if (room.bannedUsers) {
 				if (this.userid in room.bannedUsers || this.autoconfirmed in room.bannedUsers) {
-					return false;
+					return null;
 				}
 			}
 			if (this.ips && room.bannedIps) {
 				for (var ip in this.ips) {
-					if (ip in room.bannedIps) return false;
+					if (ip in room.bannedIps) return null;
 				}
 			}
 		}
 		if (!connection) {
-			for (var i = 0; i < this.connections.length;i++) {
+			for (var i = 0; i < this.connections.length; i++) {
 				// only join full clients, not pop-out single-room
 				// clients
 				if (this.connections[i].rooms['global']) {
 					this.joinRoom(room, this.connections[i]);
 				}
 			}
-			return;
+			return true;
 		}
 		if (!connection.rooms[room.id]) {
+			connection.joinRoom(room);
 			if (!this.roomCount[room.id]) {
 				this.roomCount[room.id] = 1;
 				room.onJoin(this, connection);
@@ -1301,7 +1332,6 @@ User = (function () {
 				this.roomCount[room.id]++;
 				room.onJoinConnection(this, connection);
 			}
-			connection.joinRoom(room);
 		}
 		return true;
 	};
@@ -1450,7 +1480,7 @@ User = (function () {
 	User.prototype.acceptChallengeFrom = function (user) {
 		var userid = toId(user);
 		user = getUser(user);
-		if (!user || !user.challengeTo || user.challengeTo.to !== this.userid) {
+		if (!user || !user.challengeTo || user.challengeTo.to !== this.userid || !this.connected || !user.connected) {
 			if (this.challengesFrom[userid]) {
 				delete this.challengesFrom[userid];
 				this.updateChallenges();
@@ -1581,11 +1611,11 @@ Connection = (function () {
 	Connection.prototype.destroy = function () {
 		Sockets.socketDisconnect(this.worker, this.socketid);
 		this.onDisconnect();
-		this.user = null;
 	};
 	Connection.prototype.onDisconnect = function () {
 		delete connections[this.id];
 		if (this.user) this.user.onDisconnect(this);
+		this.user = null;
 	};
 
 	Connection.prototype.popup = function (message) {

@@ -61,6 +61,8 @@ var Battle, BattleSide, BattlePokemon;
 
 var Battles = {};
 
+require('./repl.js').start('battle-engine-', process.pid, function (cmd) { return eval(cmd); });
+
 // Receive and process a message sent using Simulator.prototype.send in
 // another process.
 battleEngineFakeProcess.client.on('message', function (message) {
@@ -298,10 +300,12 @@ BattlePokemon = (function () {
 
 	BattlePokemon.prototype.trapped = false;
 	BattlePokemon.prototype.maybeTrapped = false;
+	BattlePokemon.prototype.maybeDisabled = false;
 	BattlePokemon.prototype.hp = 0;
 	BattlePokemon.prototype.maxhp = 100;
 	BattlePokemon.prototype.illusion = null;
 	BattlePokemon.prototype.fainted = false;
+	BattlePokemon.prototype.faintQueued = false;
 	BattlePokemon.prototype.lastItem = '';
 	BattlePokemon.prototype.ateBerry = false;
 	BattlePokemon.prototype.status = '';
@@ -343,6 +347,7 @@ BattlePokemon = (function () {
 		this.disabledMoves = {};
 		this.negateImmunity = {};
 		this.trapped = this.maybeTrapped = false;
+		this.maybeDisabled = false;
 		// reset for ignore settings
 		this.ignore = {};
 		for (var i in this.moveset) {
@@ -351,6 +356,7 @@ BattlePokemon = (function () {
 		if (init) return;
 
 		if (this.runImmunity('trapped')) this.battle.runEvent('MaybeTrapPokemon', this);
+		// Disable the faculty to cancel switches if a foe may have a trapping ability
 		for (var i = 0; i < this.battle.sides.length; ++i) {
 			var side = this.battle.sides[i];
 			if (side === this.side) continue;
@@ -487,7 +493,7 @@ BattlePokemon = (function () {
 		if (lockedMove === true) lockedMove = false;
 		return lockedMove;
 	};
-	BattlePokemon.prototype.getMoves = function (lockedMove) {
+	BattlePokemon.prototype.getMoves = function (lockedMove, restrictData) {
 		if (lockedMove) {
 			lockedMove = toId(lockedMove);
 			this.trapped = true;
@@ -511,15 +517,15 @@ BattlePokemon = (function () {
 				}
 				continue;
 			}
-			if (this.disabledMoves[move.id] || !move.pp && (this.battle.gen !== 1 || !this.volatiles['partialtrappinglock'])) {
-				move.disabled = true;
-			} else if (!move.disabled) {
+			if (this.disabledMoves[move.id] && (!restrictData || !this.disabledMoves[move.id].isHidden) || !move.pp && (this.battle.gen !== 1 || !this.volatiles['partialtrappinglock'])) {
+				move.disabled = !restrictData && this.disabledMoves[move.id] && this.disabledMoves[move.id].isHidden ? 'hidden' : true;
+			} else if (!move.disabled || move.disabled === 'hidden' && restrictData) {
 				hasValidMove = true;
 			}
 			var moveName = move.move;
 			if (move.id === 'hiddenpower') {
 				moveName = 'Hidden Power ' + this.hpType;
-				if (this.gen < 6) moveName += ' ' + this.hpPower;
+				if (this.battle.gen < 6) moveName += ' ' + this.hpPower;
 			}
 			moves.push({
 				move: moveName,
@@ -536,22 +542,24 @@ BattlePokemon = (function () {
 				id: lockedMove
 			}];
 		}
-		if (!hasValidMove) {
-			return [{
-				move: 'Struggle',
-				id: 'struggle'
-			}];
-		}
-		return moves;
+		if (hasValidMove) return moves;
+
+		return [{
+			move: 'Struggle',
+			id: 'struggle'
+		}];
 	};
 	BattlePokemon.prototype.getRequestData = function () {
 		var lockedMove = this.getLockedMove();
 
-		var data = {moves: this.getMoves(lockedMove)};
-
 		// Information should be restricted for the last active Pokémon
 		var isLastActive = this.isLastActive();
+		var data = {moves: this.getMoves(lockedMove, isLastActive)};
+
 		if (isLastActive) {
+			if (this.maybeDisabled) {
+				data.maybeDisabled = true;
+			}
 			if (this.trapped === true) {
 				data.trapped = true;
 			} else if (this.maybeTrapped) {
@@ -769,11 +777,11 @@ BattlePokemon = (function () {
 		// This function only puts the pokemon in the faint queue;
 		// actually setting of this.fainted comes later when the
 		// faint queue is resolved.
-		if (this.fainted || this.status === 'fnt') return 0;
+		if (this.fainted || this.faintQueued) return 0;
 		var d = this.hp;
 		this.hp = 0;
 		this.switchFlag = false;
-		this.status = 'fnt';
+		this.faintQueued = true;
 		this.battle.faintQueue.push({
 			target: this,
 			source: source,
@@ -822,6 +830,19 @@ BattlePokemon = (function () {
 		}
 		if (!moves.length) return ['struggle'];
 		return moves;
+	};
+	BattlePokemon.prototype.disableMove = function (moveid, isHidden, sourceEffect) {
+		if (!sourceEffect && this.battle.event) {
+			sourceEffect = this.battle.effect;
+		}
+		moveid = toId(moveid);
+		if (moveid.substr(0, 11) === 'hiddenpower') moveid = 'hiddenpower';
+
+		if (this.disabledMoves[moveid] && !this.disabledMoves[moveid].isHidden) return;
+		this.disabledMoves[moveid] = {
+			isHidden: !!isHidden,
+			sourceEffect: sourceEffect
+		};
 	};
 	// returns the amount of damage actually healed
 	BattlePokemon.prototype.heal = function (d) {
@@ -1121,7 +1142,7 @@ BattlePokemon = (function () {
 	BattlePokemon.getHealth = function (side) {
 		if (!this.hp) return '0 fnt';
 		var hpstring;
-		if ((side === true) || (this.side === side) || this.battle.getFormat().debug) {
+		if ((side === true) || (this.side === side) || this.battle.getFormat().debug || this.battle.reportExactHP) {
 			hpstring = '' + this.hp + '/' + this.maxhp;
 		} else {
 			var ratio = this.hp / this.maxhp;
@@ -1353,6 +1374,28 @@ BattleSide = (function () {
 		this.battle.update();
 		return true;
 	};
+	BattleSide.prototype.send = function () {
+		var parts = Array.prototype.slice.call(arguments);
+		var functions = parts.map(function (part) {
+			return typeof part === 'function';
+		});
+		var sideUpdate = [];
+		if (functions.indexOf(true) < 0) {
+			sideUpdate.push('|' + parts.join('|'));
+		} else {
+			var line = '';
+			for (var j = 0; j < parts.length; ++j) {
+				line += '|';
+				if (functions[j]) {
+					line += parts[j](this);
+				} else {
+					line += parts[j];
+				}
+			}
+			sideUpdate.push(line);
+		}
+		this.battle.send('sideupdate', this.id + "\n" + sideUpdate);
+	};
 	BattleSide.prototype.emitCallback = function () {
 		this.battle.send('callback', this.id + "\n" +
 			Array.prototype.slice.call(arguments).join('|'));
@@ -1575,7 +1618,7 @@ Battle = (function () {
 		if (sourceEffect === undefined && this.effect) sourceEffect = this.effect;
 		if (source === undefined && this.event && this.event.target) source = this.event.target;
 
-		if (this.weather === status.id) return false;
+		if (this.weather === status.id && this.gen > 2) return false;
 		if (this.weather && !status.id) {
 			var oldstatus = this.getWeather();
 			this.singleEvent('End', oldstatus, this.weatherData, this);
@@ -1791,7 +1834,7 @@ Battle = (function () {
 	Battle.prototype.eachEvent = function (eventid, effect, relayVar) {
 		var actives = [];
 		if (!effect && this.effect) effect = this.effect;
-		for (var i = 0; i < this.sides.length;i++) {
+		for (var i = 0; i < this.sides.length; i++) {
 			var side = this.sides[i];
 			for (var j = 0; j < side.active.length; j++) {
 				if (side.active[j]) actives.push(side.active[j]);
@@ -2175,7 +2218,7 @@ Battle = (function () {
 				statuses = statuses.concat(this.getRelevantEffectsInner(this, callbackType, null, null, true, false, getAll));
 			}
 			if (bubbleDown) {
-				for (var i = 0;i < thing.active.length;i++) {
+				for (var i = 0; i < thing.active.length; i++) {
 					statuses = statuses.concat(this.getRelevantEffectsInner(thing.active[i], callbackType, null, null, false, true, getAll));
 				}
 			}
@@ -3084,6 +3127,7 @@ Battle = (function () {
 		function check(a) {
 			if (!a) return;
 			if (a.fainted) {
+				a.status = 'fnt';
 				a.switchFlag = true;
 			}
 		}
@@ -3093,7 +3137,8 @@ Battle = (function () {
 	};
 	Battle.prototype.faintMessages = function (lastFirst) {
 		if (this.ended) return;
-		if (lastFirst && this.faintQueue.length) {
+		if (!this.faintQueue.length) return false;
+		if (lastFirst) {
 			this.faintQueue.unshift(this.faintQueue.pop());
 		}
 		var faintData;
@@ -3109,6 +3154,20 @@ Battle = (function () {
 				faintData.target.side.faintedThisTurn = true;
 			}
 		}
+
+		if (this.gen <= 1) {
+			// in gen 1, fainting skips the rest of the turn, including residuals
+			this.queue = [];
+		} else if (this.gen <= 3 && this.gameType === 'singles') {
+			// in gen 3 or earlier, fainting in singles skips to residuals
+			for (var i = 0; i < this.p1.active.length; i++) {
+				this.cancelMove(this.p1.active[i]);
+			}
+			for (var i = 0; i < this.p2.active.length; i++) {
+				this.cancelMove(this.p2.active[i]);
+			}
+		}
+
 		if (!this.p1.pokemonLeft && !this.p2.pokemonLeft) {
 			this.win(faintData && faintData.target.side);
 			return true;
@@ -3445,10 +3504,6 @@ Battle = (function () {
 		}
 
 		if (p1switch || p2switch) {
-			if (this.gen <= 1) {
-				// in gen 1, fainting ends the turn; residuals do not happen
-				this.queue = [];
-			}
 			this.makeRequest('switch');
 			return true;
 		}
@@ -3528,7 +3583,7 @@ Battle = (function () {
 		if (typeof choice === 'string') choice = choice.split(',');
 
 		if (side.decision && side.decision.finalDecision) {
-			this.debug("Can't cancel decision: the last pokemon could have been trapped");
+			this.debug("Can't override decision: the last pokemon could have been trapped or disabled");
 			return;
 		}
 
@@ -3566,7 +3621,7 @@ Battle = (function () {
 		if (!side.currentRequest) return;
 
 		if (side.decision && side.decision.finalDecision) {
-			this.debug("Can't cancel decision: the last pokemon could have been trapped");
+			this.debug("Can't cancel decision: the last pokemon could have been trapped or disabled");
 			return;
 		}
 
@@ -3586,7 +3641,7 @@ Battle = (function () {
 
 		var decisions = [];
 		var len = choices.length;
-		if (side.currentRequest === 'move') len = side.active.length;
+		if (side.currentRequest !== 'teampreview') len = side.active.length;
 
 		var freeSwitchCount = {'switch':0, 'pass':0};
 		if (side.currentRequest === 'switch') {
@@ -3604,15 +3659,27 @@ Battle = (function () {
 				choice = choice.substr(0, firstSpaceIndex).trim();
 			}
 
+			var pokemon = side.pokemon[i];
+
 			switch (side.currentRequest) {
 			case 'teampreview':
 				if (choice !== 'team' || i > 0) return false;
 				break;
 			case 'move':
 				if (i >= side.active.length) return false;
-				if (!side.pokemon[i] || side.pokemon[i].fainted) {
+				if (!pokemon || pokemon.fainted) {
 					decisions.push({
 						choice: 'pass'
+					});
+					continue;
+				}
+				var lockedMove = pokemon.getLockedMove();
+				if (lockedMove) {
+					decisions.push({
+						choice: 'move',
+						pokemon: pokemon,
+						targetLoc: this.runEvent('LockMoveTarget', pokemon) || 0,
+						move: lockedMove
 					});
 					continue;
 				}
@@ -3716,46 +3783,85 @@ Battle = (function () {
 				break;
 
 			case 'move':
+				var moveid = '';
 				var targetLoc = 0;
 				var pokemon = side.pokemon[i];
-				var lockedMove = pokemon.getLockedMove();
-				var validMoves = pokemon.getValidMoves(lockedMove);
-				var moveid = '';
 
-				if (data.substr(data.length - 2) === ' 1') targetLoc = 1;
-				if (data.substr(data.length - 2) === ' 2') targetLoc = 2;
-				if (data.substr(data.length - 2) === ' 3') targetLoc = 3;
-				if (data.substr(data.length - 3) === ' -1') targetLoc = -1;
-				if (data.substr(data.length - 3) === ' -2') targetLoc = -2;
-				if (data.substr(data.length - 3) === ' -3') targetLoc = -3;
+				if (data.substr(-2) === ' 1') targetLoc = 1;
+				if (data.substr(-2) === ' 2') targetLoc = 2;
+				if (data.substr(-2) === ' 3') targetLoc = 3;
+				if (data.substr(-3) === ' -1') targetLoc = -1;
+				if (data.substr(-3) === ' -2') targetLoc = -2;
+				if (data.substr(-3) === ' -3') targetLoc = -3;
 
 				if (targetLoc) data = data.substr(0, data.lastIndexOf(' '));
 
-				if (lockedMove) targetLoc = (this.runEvent('LockMoveTarget', pokemon) || 0);
-
-				if (data.substr(data.length - 5) === ' mega') {
-					if (!lockedMove) {
-						decisions.push({
-							choice: 'megaEvo',
-							pokemon: pokemon
-						});
-					}
+				if (data.substr(-5) === ' mega') {
+					decisions.push({
+						choice: 'megaEvo',
+						pokemon: pokemon
+					});
 					data = data.substr(0, data.length - 5);
 				}
 
+				/**
+				 *	Parse the move identifier (name or index), according to the request sent to the client.
+				 *	If the move is not found, the decision is invalid without requiring further inspection.
+				 */
+
+				var requestMoves = pokemon.getRequestData().moves;
 				if (data.search(/^[0-9]+$/) >= 0) {
-					moveid = validMoves[parseInt(data, 10) - 1];
+					// parse a one-based move index
+					var moveIndex = parseInt(data, 10) - 1;
+					if (!requestMoves[moveIndex]) {
+						this.debug("Can't use an unexpected move");
+						return false;
+					}
+					moveid = requestMoves[moveIndex].id;
 				} else {
+					// parse a move name
 					moveid = toId(data);
 					if (moveid.substr(0, 11) === 'hiddenpower') {
 						moveid = 'hiddenpower';
 					}
-					if (validMoves.indexOf(moveid) < 0) {
-						moveid = '';
+					if (!requestMoves.map('id').any(moveid)) {
+						this.debug("Can't use an unexpected move");
+						return false;
 					}
 				}
-				if (!moveid) {
-					moveid = validMoves[0];
+
+				/**
+				 *	Check whether the chosen move is really valid, accounting for effects active in battle,
+				 *	which could be unknown for the client.
+				 */
+
+				var moves = pokemon.getMoves();
+				if (!moves.length || moves[0].id === 'struggle') {
+					// override decision and use Struggle if there are no other valid moves
+					side.send('-activate', pokemon, 'move: Struggle');
+					moveid = 'struggle';
+				} else {
+					// at least a move is valid (other than Struggle)
+					// check if the chosen one is
+					var isEnabled = false;
+					for (var j = 0; j < moves.length; j++) {
+						if (moves[j].id !== moveid) continue;
+						if (!moves[j].disabled) {
+							isEnabled = true;
+							break;
+						}
+					}
+					if (!isEnabled) {
+						// request a different choice
+						var sourceEffect = pokemon.disabledMoves[moveid] && pokemon.disabledMoves[moveid].sourceEffect;
+						side.emitCallback('cant', pokemon, sourceEffect ? sourceEffect.fullname : '', moveid);
+						return false;
+					}
+					// the chosen move is valid
+				}
+
+				if (pokemon.maybeDisabled) {
+					decisions.finalDecision = decisions.finalDecision || pokemon.isLastActive();
 				}
 
 				decisions.push({
@@ -3967,7 +4073,7 @@ Battle = (function () {
 
 		if (this.log.length > logPos) {
 			if (alreadyEnded !== undefined && this.ended && !alreadyEnded) {
-				if (this.rated) {
+				if (this.rated || Config.logchallenges) {
 					var log = {
 						turns: this.turn,
 						p1: this.p1.name,

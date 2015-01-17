@@ -17,36 +17,86 @@ exports.BattleMovedex = {
 			this.add('-setboost', target, 'atk', '6', '[from] move: Belly Drum');
 		}
 	},
-	leechseed: {
+	counter: {
 		inherit: true,
-		onHit: function (target, source, move) {
-			if (!source || source.fainted || source.hp <= 0) {
-				// Well this shouldn't happen
-				this.debug('Nothing to leech into');
-				return;
+		damageCallback: function (pokemon, target) {
+			if (pokemon.lastAttackedBy && pokemon.lastAttackedBy.thisTurn && (this.getCategory(pokemon.lastAttackedBy.move) === 'Physical' || this.getMove(pokemon.lastAttackedBy.move).id === 'hiddenpower') && target.lastMove !== 'sleeptalk') {
+				return 2 * pokemon.lastAttackedBy.damage;
 			}
-			if (target.newlySwitched && target.speed <= source.speed) {
-				var toLeech = this.clampIntRange(target.maxhp / 8, 1);
-				var damage = this.damage(toLeech, target, source, 'move: Leech Seed');
-				if (damage) {
-					this.heal(damage, source, target);
+			return false;
+		},
+		beforeTurnCallback: function () {},
+		onTryHit: function () {},
+		effect: {}
+	},
+	encore: {
+		inherit: true,
+		effect: {
+			durationCallback: function () {
+				return this.random(3, 7);
+			},
+			onStart: function (target) {
+				var noEncore = {encore:1, mimic:1, mirrormove:1, sketch:1, transform:1, sleeptalk:1};
+				var moveIndex = target.moves.indexOf(target.lastMove);
+				if (!target.lastMove || noEncore[target.lastMove] || (target.moveset[moveIndex] && target.moveset[moveIndex].pp <= 0)) {
+					// it failed
+					this.add('-fail', target);
+					delete target.volatiles['encore'];
+					return;
+				}
+				this.effectData.move = target.lastMove;
+				this.add('-start', target, 'Encore');
+				if (!this.willMove(target)) {
+					this.effectData.duration++;
+				}
+			},
+			onOverrideDecision: function (pokemon) {
+				return this.effectData.move;
+			},
+			onResidualOrder: 13,
+			onResidual: function (target) {
+				if (target.moves.indexOf(target.lastMove) >= 0 && target.moveset[target.moves.indexOf(target.lastMove)].pp <= 0) {
+					// early termination if you run out of PP
+					delete target.volatiles.encore;
+					this.add('-end', target, 'Encore');
+				}
+			},
+			onEnd: function (target) {
+				this.add('-end', target, 'Encore');
+			},
+			onModifyPokemon: function (pokemon) {
+				if (!this.effectData.move || !pokemon.hasMove(this.effectData.move)) {
+					return;
+				}
+				for (var i = 0; i < pokemon.moveset.length; i++) {
+					if (pokemon.moveset[i].id !== this.effectData.move) {
+						pokemon.disableMove(pokemon.moveset[i].id);
+					}
 				}
 			}
-		},
+		}
+	},
+	explosion: {
+		inherit: true,
+		basePower: 250
+	},
+	leechseed: {
+		inherit: true,
+		onHit: function () {},
 		effect: {
 			onStart: function (target) {
 				this.add('-start', target, 'move: Leech Seed');
 			},
 			onAfterMoveSelf: function (pokemon) {
-				var target = pokemon.side.foe.active[pokemon.volatiles['leechseed'].sourcePosition];
-				if (!target || target.fainted || target.hp <= 0) {
+				var leecher = pokemon.side.foe.active[pokemon.volatiles['leechseed'].sourcePosition];
+				if (!leecher || leecher.fainted || leecher.hp <= 0) {
 					this.debug('Nothing to leech into');
 					return;
 				}
 				var toLeech = this.clampIntRange(pokemon.maxhp / 8, 1);
-				var damage = this.damage(toLeech, pokemon, target);
+				var damage = this.damage(toLeech, pokemon, leecher);
 				if (damage) {
-					this.heal(damage, target, pokemon);
+					this.heal(damage, leecher, pokemon);
 				}
 			}
 		}
@@ -88,8 +138,36 @@ exports.BattleMovedex = {
 			this.useMove(move, target);
 		}
 	},
+	mirrorcoat: {
+		inherit: true,
+		effect: {
+			duration: 1,
+			noCopy: true,
+			onStart: function (target, source, source2, move) {
+				this.effectData.position = null;
+				this.effectData.damage = 0;
+			},
+			onRedirectTarget: function (target, source, source2) {
+				if (source !== this.effectData.target) return;
+				return source.side.foe.active[this.effectData.position];
+			},
+			onDamagePriority: -101,
+			onDamage: function (damage, target, source, effect) {
+				if (effect && effect.effectType === 'Move' && source.side !== target.side && this.getCategory(effect.id) === 'Special' && target.lastMove !== 'sleeptalk') {
+					this.effectData.position = source.position;
+					this.effectData.damage = 2 * damage;
+				}
+			}
+		}
+	},
+	psywave: {
+		inherit: true,
+		damageCallback: function (pokemon) {
+			return this.random(1, pokemon.level + Math.floor(pokemon.level / 2));
+		}
+	},
 	rage: {
-		// todo
+		// TODO
 		// Rage boosts in Gens 2-4 is for the duration of Rage only
 		// Disable does not build
 		inherit: true
@@ -131,6 +209,14 @@ exports.BattleMovedex = {
 			}
 		},
 		priority: -1
+	},
+	selfdestruct: {
+		inherit: true,
+		basePower: 200
+	},
+	skyattack: {
+		inherit: true,
+		secondary: {}
 	},
 	sleeptalk: {
 		inherit: true,
@@ -187,6 +273,10 @@ exports.BattleMovedex = {
 					this.debug('sub bypass: self hit');
 					return;
 				}
+				if (move.drain) {
+					this.add('-miss', source);
+					return null;
+				}
 				if (move.category === 'Status') {
 					var SubBlocked = {
 						leechseed:1, lockon:1, mindreader:1, nightmare:1, painsplit:1, sketch:1
@@ -195,7 +285,7 @@ exports.BattleMovedex = {
 						// this is safe, move is a copy
 						delete move.volatileStatus;
 					}
-					if (move.status || (move.boosts && move.id !== 'swagger') || move.volatileStatus === 'confusion' || SubBlocked[move.id] || move.drain) {
+					if (move.status || (move.boosts && move.id !== 'swagger') || move.volatileStatus === 'confusion' || SubBlocked[move.id]) {
 						this.add('-activate', target, 'Substitute', '[block] ' + move.name);
 						return null;
 					}
@@ -230,6 +320,24 @@ exports.BattleMovedex = {
 			},
 			onEnd: function (target) {
 				this.add('-end', target, 'Substitute');
+			}
+		}
+	},
+	triattack: {
+		inherit: true,
+		secondary: {
+			chance: 20,
+			onHit: function (target, source) {
+				if (!target.hasType('Normal')) {
+					var result = this.random(3);
+					if (result === 0) {
+						target.trySetStatus('brn', source);
+					} else if (result === 1) {
+						target.trySetStatus('par', source);
+					} else {
+						target.trySetStatus('frz', source);
+					}
+				}
 			}
 		}
 	},

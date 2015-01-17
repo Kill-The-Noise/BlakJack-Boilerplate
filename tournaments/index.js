@@ -124,6 +124,7 @@ Tournament = (function () {
 		this.room.send('|tournament|update|' + JSON.stringify({generator: generator.name}));
 		this.isBracketInvalidated = true;
 		this.update();
+		return true;
 	};
 
 	Tournament.prototype.forceEnd = function () {
@@ -621,6 +622,9 @@ Tournament = (function () {
 	Tournament.prototype.finishAcceptChallenge = function (user, challenge, result) {
 		if (!result) return;
 
+		// Prevent battles between offline users from starting
+		if (!challenge.from.connected || !user.connected) return;
+
 		// Prevent double accepts and users that have been disqualified while between these two functions
 		if (!this.pendingChallenges.get(challenge.from)) return;
 		if (!this.pendingChallenges.get(user)) return;
@@ -792,8 +796,8 @@ var commands = {
 		},
 		getusers: function (tournament) {
 			if (!this.canBroadcast()) return;
-			var users = usersToNames(tournament.generator.getUsers().sort());
-			this.sendReplyBox("<strong>" + users.length + " users are in this tournament:</strong><br />" + users.join(", "));
+			var users = usersToNames(tournament.generator.getUsers(true).sort());
+			this.sendReplyBox("<strong>" + users.length + " users remain in this tournament:</strong><br />" + Tools.escapeHTML(users.join(", ")));
 		},
 		getupdate: function (tournament, user) {
 			tournament.updateFor(user);
@@ -822,7 +826,15 @@ var commands = {
 				return this.sendReply("Usage: " + cmd + " <type> [, <comma-separated arguments>]");
 			}
 			var generator = createTournamentGenerator(params.shift(), params, this);
-			if (generator) tournament.setGenerator(generator, this);
+			if (generator && tournament.setGenerator(generator, this)) {
+				if (params[2] && parseInt(params[2]) >= 2) {
+					tournament.playerCap = parseInt(params[2]);
+					if (Config.tournamentDefaultPlayerCap && tournament.playerCap > Config.tournamentDefaultPlayerCap) {
+						ResourceMonitor.log('[ResourceMonitor] Room ' + tournament.room.id + ' starting a tour over default cap (' + tournament.playerCap + ')');
+					}
+				}
+				this.sendReply("Tournament set to " + generator.name + (params[2] ? " with a player cap of " + tournament.playerCap : "") + ".");
+			}
 		},
 		begin: 'start',
 		start: function (tournament, user) {

@@ -61,4 +61,5 @@ var fakeProcess = new (require('./fake-process').FakeProcess)();
 		});
 	});
 
+	require('./repl.js').start('verifier', function (cmd) { return eval(cmd); });
 //}

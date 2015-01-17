@@ -71,6 +71,10 @@ exports.reportJoins = false;
 //   getting more than 160 or so users.
 exports.reportBattles = false;
 
+// report joins and leaves in battle - shows messages like "<USERNAME> joined" in battle
+// Turn this off on large tournament servers where battles get a lot of joins and leaves.
+exports.reportbattlejoins = true;
+
 // moderated chat - prevent unvoiced users from speaking
 //   This should only be enabled in special situations, such as temporarily
 //   when you're dealing with huge influxes of spammy users.
@@ -111,7 +115,10 @@ exports.watchConfig = true;
 // logChat - whether to log chat rooms.
 exports.logChat = false;
 
-// logUserStats - how often (in milliseconds) to write user stats to the
+// logchallenges - whether to log challenge battles. Useful for tournament servers.
+exports.logchallenges = false;
+
+// loguserstats - how often (in milliseconds) to write user stats to the
 // lobby log. This has no effect if `logchat` is disabled.
 exports.logUserStats = 1000 * 60 * 10; // 10 minutes
 
@@ -146,23 +153,16 @@ exports.customAvatars = {
 // which case users won't be given any information on how to appeal.
 exports.appealUri = '';
 
-// Symbols, Groups and Permissions
-//   mutedSymbol - The symbol representing a muted user.
-//   lockedSymbol - The symbol representing a locked user.
-//   groups - {
-//       global - All the possible global groups.
-//       chatRoom - All the possible chat room groups.
-//       battleRoom - All the possible battle room groups.
-//       default - {
-//           global - The default global group.
-//           chatRoom - The default chat room group.
-//           battleRoom - The default battle room group.
-//       }
-//       byRank - All the possible groups arranged in ascending order of rank.
-//       bySymbol - The main defining area for the groups and permissions, which will be outlined below.
-//   }
-//   Each entry in `groups.bySymbol` is a separate group. Some of the members are "special"
-//     while the rest are just normal permissions.
+// replsocketprefix - the prefix for the repl sockets to be listening on
+// replsocketmode - the file mode bits to use for the repl sockets
+exports.replsocketprefix = './logs/repl/';
+exports.replsocketmode = 0600;
+
+// permissions and groups:
+//   Each entry in `groupsranking' specifies the ranking of the groups.
+//   Each entry in `groups' is a seperate group. Some of the members are "special"
+//     while the rest is just a normal permission.
+>>>>>>> upstream/master
 //   The special members are as follows:
 //     - id: Specifies an id for the group.
 //     - name: Specifies the human-readable name for the group.

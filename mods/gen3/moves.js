@@ -182,7 +182,7 @@ exports.BattleMovedex = {
 				var moves = pokemon.moveset;
 				for (var i = 0; i < moves.length; i++) {
 					if (moves[i].id === this.effectData.move) {
-						moves[i].disabled = true;
+						pokemon.disableMove(moves[i].id);
 					}
 				}
 			}
@@ -253,7 +253,7 @@ exports.BattleMovedex = {
 				}
 				for (var i = 0; i < pokemon.moveset.length; i++) {
 					if (pokemon.moveset[i].id !== this.effectData.move) {
-						pokemon.moveset[i].disabled = true;
+						pokemon.disableMove(pokemon.moveset[i].id);
 					}
 				}
 			}
@@ -261,14 +261,6 @@ exports.BattleMovedex = {
 	},
 	explosion: {
 		inherit: true,
-		onAfterMove: function (pokemon) {
-			for (var i = 0; i < pokemon.side.active.length; i++) {
-				this.cancelMove(pokemon.side.active[i]);
-			}
-			for (var i = 0; i < pokemon.side.foe.active.length; i++) {
-				this.cancelMove(pokemon.side.foe.active[i]);
-			}
-		},
 		basePower: 500
 	},
 	extrasensory: {
@@ -504,15 +496,6 @@ exports.BattleMovedex = {
 		inherit: true,
 		isContact: true
 	},
-	payback: {
-		inherit: true,
-		basePowerCallback: function (pokemon, target) {
-			if (this.willMove(target)) {
-				return 50;
-			}
-			return 100;
-		}
-	},
 	petaldance: {
 		inherit: true,
 		basePower: 70,
@@ -554,14 +537,6 @@ exports.BattleMovedex = {
 	},
 	selfdestruct: {
 		inherit: true,
-		onAfterMove: function (pokemon) {
-			for (var i = 0; i < pokemon.side.active.length; i++) {
-				this.cancelMove(pokemon.side.active[i]);
-			}
-			for (var i = 0; i < pokemon.side.foe.active.length; i++) {
-				this.cancelMove(pokemon.side.foe.active[i]);
-			}
-		},
 		basePower: 400
 	},
 	skillswap: {
@@ -644,7 +619,7 @@ exports.BattleMovedex = {
 				var moves = pokemon.moveset;
 				for (var i = 0; i < moves.length; i++) {
 					if (this.getMove(moves[i].move).category === 'Status') {
-						moves[i].disabled = true;
+						pokemon.disableMove(moves[i].id);
 					}
 				}
 			},

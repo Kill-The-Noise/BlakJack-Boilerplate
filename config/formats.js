@@ -8,14 +8,14 @@ exports.Formats = [
 
 	{
 		name: "Random Battle",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
 		team: 'random',
 		ruleset: ['PotD', 'Pokemon', 'Sleep Clause Mod', 'HP Percentage Mod']
 	},
 	{
 		name: "Unrated Random Battle",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
 		team: 'random',
 		challengeShow: false,
@@ -24,66 +24,61 @@ exports.Formats = [
 	},
 	{
 		name: "OU",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
 		ruleset: ['Pokemon', 'Standard', 'Team Preview', 'Swagger Clause', 'Baton Pass Clause'],
 		banlist: ['Uber', 'Soul Dew', 'Gengarite', 'Kangaskhanite', 'Lucarionite', 'Mawilite', 'Salamencite']
 	},
 	{
 		name: "Ubers",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
 		ruleset: ['Pokemon', 'Standard Ubers', 'Swagger Clause', 'Team Preview', 'Mega Rayquaza Ban Mod'],
 		banlist: []
 	},
 	{
 		name: "UU",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
 		ruleset: ['OU'],
-		banlist: ['OU', 'BL', 'Altarianite', 'Diancite', 'Heracronite', 'Gardevoirite', 'Medichamite', 'Metagrossite',
+		banlist: ['OU', 'BL', 'Alakazite', 'Altarianite', 'Heracronite', 'Galladite', 'Gardevoirite', 'Lopunnite', 'Medichamite', 'Metagrossite',
 			'Drizzle', 'Drought', 'Shadow Tag'
 		]
 	},
 	{
 		name: "RU",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
+		searchShow: false,
 		ruleset: ['UU'],
-		banlist: ['UU', 'BL2', 'Galladite']
+		banlist: ['UU', 'BL2', 'Galladite', 'Houndoominite']
+	},
+	{
+		name: "RU (suspect test)",
+		section: "ORAS Singles",
+
+		challengeShow: false,
+		ruleset: ['UU'],
+		banlist: ['UU', 'BL2', 'Galladite', 'Houndoominite']
 	},
 	{
 		name: "NU",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
 		ruleset: ['RU'],
-		banlist: ['RU', 'BL3']
+		banlist: ['RU', 'BL3', 'Glalitite']
 	},
 	{
 		name: "LC",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
 		maxLevel: 5,
 		ruleset: ['Pokemon', 'Standard', 'Team Preview', 'Little Cup'],
-		banlist: ['Dragon Rage', 'Sonic Boom', 'Swagger', 'LC Uber', 'Gligar', 'Misdreavus']
-	},
-	{
-		name: "LC UU",
-		section: "XY Singles",
-
-		searchShow: false,
-		maxLevel: 5,
-		ruleset: ['LC'],
-		banlist: ['Abra', 'Aipom', 'Archen', 'Bellsprout', 'Bunnelby', 'Carvanha', 'Chinchou', 'Clamperl', 'Cottonee', 'Cranidos',
-			'Croagunk', 'Diglett', 'Drilbur', 'Dwebble', 'Elekid', 'Ferroseed', 'Fletchling', 'Foongus', 'Gastly', 'Honedge',
-			'Houndour', 'Magnemite', 'Meditite', 'Mienfoo', 'Misdreavus', 'Omanyte', 'Onix', 'Pawniard', 'Ponyta', 'Porygon',
-			'Riolu', 'Scraggy', 'Shellder', 'Slowpoke', 'Snubbull', 'Spritzee', 'Staryu', 'Taillow', 'Timburr', 'Tirtouga',
-			'Trubbish', 'Vullaby', 'Vulpix', 'Zigzagoon'
-		]
+		banlist: ['LC Uber', 'Gligar', 'Misdreavus', 'Scyther', 'Sneasel', 'Tangela', 'Dragon Rage', 'Sonic Boom', 'Swagger']
 	},
 	{
 		name: "Anything Goes",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
 		ruleset: ['Pokemon', 'Endless Battle Clause', 'HP Percentage Mod', 'Team Preview'],
 		banlist: ['Unreleased', 'Illegal']
@@ -104,7 +99,7 @@ exports.Formats = [
 	},
 	/*{
 		name: "CAP Plasmanta Playtest",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
 		ruleset: ['CAP Pokemon', 'Standard', 'Team Preview', 'Swagger Clause', 'Baton Pass Clause'],
 		banlist: ['Uber', 'Gengarite', 'Kangaskhanite', 'Lucarionite', 'Soul Dew',
@@ -113,25 +108,43 @@ exports.Formats = [
 	},*/
 	{
 		name: "Battle Spot Singles",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
+		maxForcedLevel: 50,
+		ruleset: ['Pokemon', 'Standard GBU', 'Team Preview GBU'],
+		requirePentagon: true,
+		validateTeam: function (team, format) {
+			if (team.length < 3) return ['You must bring at least three Pokémon.'];
+		},
 		onBegin: function () {
 			this.debug('cutting down to 3');
 			this.p1.pokemon = this.p1.pokemon.slice(0, 3);
 			this.p1.pokemonLeft = this.p1.pokemon.length;
 			this.p2.pokemon = this.p2.pokemon.slice(0, 3);
 			this.p2.pokemonLeft = this.p2.pokemon.length;
-		},
+		}
+	},
+	{
+		name: "Battle of Hoenn",
+		section: "ORAS Singles",
+
 		maxForcedLevel: 50,
-		ruleset: ['Pokemon', 'Standard GBU', 'Team Preview GBU'],
-		banlist: [], // The necessary bans are in Standard GBU
+		ruleset: ['Pokemon', 'Standard GBU', 'Hoenn Pokedex', 'Team Preview GBU'],
+		requirePentagon: true,
 		validateTeam: function (team, format) {
 			if (team.length < 3) return ['You must bring at least three Pokémon.'];
+		},
+		onBegin: function () {
+			this.debug('cutting down to 3');
+			this.p1.pokemon = this.p1.pokemon.slice(0, 3);
+			this.p1.pokemonLeft = this.p1.pokemon.length;
+			this.p2.pokemon = this.p2.pokemon.slice(0, 3);
+			this.p2.pokemonLeft = this.p2.pokemon.length;
 		}
 	},
 	{
 		name: "Custom Game",
-		section: "XY Singles",
+		section: "ORAS Singles",
 
 		searchShow: false,
 		canUseRandomTeam: true,
@@ -152,10 +165,14 @@ exports.Formats = [
 		ruleset: ['Pokemon', 'Sleep Clause Mod', 'HP Percentage Mod']
 	},
 	{
-		name: "OU Monotype",
+		name: "Monotype",
 		section: "Monotype",
-		ruleset: ['OU', 'Same Type Clause'],
-		banlist: ['Talonflame']
+
+		ruleset: ['Pokemon', 'Standard', 'Baton Pass Clause', 'Swagger Clause', 'Same Type Clause', 'Team Preview'],
+		banlist: ['Arceus', 'Blaziken', 'Darkrai', 'Deoxys', 'Deoxys-Attack', 'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon', 'Ho-Oh',
+			'Kyogre', 'Lugia', 'Mewtwo', 'Palkia', 'Rayquaza', 'Reshiram', 'Talonflame', 'Xerneas', 'Yveltal', 'Zekrom',
+			'Gengarite', 'Kangaskhanite', 'Lucarionite', 'Mawilite', 'Salamencite', 'Slowbronite', 'Soul Dew'
+		]
 	},
 	{
 		name: "Ubers Monotype",
@@ -201,26 +218,25 @@ exports.Formats = [
 
 	{
 		name: "Random Doubles Battle",
-		section: "XY Doubles",
+		section: "ORAS Doubles",
 
 		gameType: 'doubles',
 		team: 'randomDoubles',
-		ruleset: ['PotD', 'Pokemon', 'Sleep Clause Mod', 'HP Percentage Mod']
+		ruleset: ['PotD', 'Pokemon', 'HP Percentage Mod']
 	},
 	{
 		name: "Smogon Doubles",
-		section: "XY Doubles",
+		section: "ORAS Doubles",
 
 		gameType: 'doubles',
 		ruleset: ['Pokemon', 'Standard Doubles', 'Team Preview'],
-		banlist: ['Soul Dew', 'Dark Void',
-			'Mewtwo', 'Lugia', 'Ho-Oh', 'Kyogre', 'Groudon', 'Rayquaza', 'Dialga', 'Palkia', 'Giratina', 'Giratina-Origin',
-			'Arceus', 'Reshiram', 'Zekrom', 'Kyurem-White', 'Xerneas', 'Yveltal'
+		banlist: ['Arceus', 'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon', 'Ho-Oh', 'Kyogre', 'Kyurem-White', 'Lugia', 'Mewtwo',
+			'Palkia', 'Rayquaza', 'Reshiram', 'Xerneas', 'Yveltal', 'Zekrom', 'Salamencite', 'Soul Dew', 'Dark Void'
 		]
 	},
 	{
 		name: "Smogon Doubles Ubers",
-		section: "XY Doubles",
+		section: "ORAS Doubles",
 
 		gameType: 'doubles',
 		searchShow: false,
@@ -229,135 +245,85 @@ exports.Formats = [
 	},
 	{
 		name: "Smogon Doubles UU",
-		section: "XY Doubles",
+		section: "ORAS Doubles",
 
 		gameType: 'doubles',
 		searchShow: false,
 		ruleset: ['Smogon Doubles'],
-		banlist: ['Abomasnow', 'Aegislash', 'Aerodactyl', 'Amoonguss', 'Aromatisse', 'Azumarill', 'Bisharp', 'Breloom', 'Chandelure', 'Charizard',
-			'Conkeldurr', 'Cresselia', 'Dragonite', 'Dusclops', 'Excadrill', 'Ferrothorn', 'Garchomp', 'Gardevoir', 'Genesect', 'Gengar',
-			'Greninja', 'Gyarados', 'Heatran', 'Hitmontop', 'Infernape', 'Kangaskhan', 'Klefki', 'Kyurem-Black', 'Landorus-Therian', 'Latios',
-			'Lucario', 'Mamoswine', 'Manectric', 'Mawile', 'Meowstic', 'Politoed', 'Rotom-Wash', 'Salamence', 'Scizor', 'Scrafty',
-			'Shaymin-Sky', 'Sylveon', 'Talonflame', 'Terrakion', 'Thundurus', 'Togekiss', 'Tyranitar', 'Venusaur', 'Volcarona', 'Whimsicott', 'Zapdos'
+		banlist: ['Aegislash', 'Amoonguss', 'Azumarill', 'Bisharp', 'Breloom', 'Camerupt', 'Chandelure', 'Charizard', 'Conkeldurr',
+			'Cresselia', 'Deoxys-Attack', 'Diancie', 'Dragonite', 'Excadrill', 'Ferrothorn', 'Garchomp', 'Gardevoir',
+			'Gengar', 'Greninja', 'Gyarados', 'Heatran', 'Hitmontop', 'Hydreigon', 'Kangaskhan', 'Keldeo', 'Kyurem-Black',
+			'Landorus-Therian', 'Latios', 'Ludicolo', 'Mamoswine', 'Mawile', 'Meowstic', 'Metagross', 'Mew', 'Politoed',
+			'Porygon2', 'Rotom-Wash', 'Sableye', 'Salamence', 'Sceptile', 'Scizor', 'Scrafty', 'Shaymin-Sky', 'Slowbro',
+			'Suicune', 'Swampert', 'Sylveon', 'Talonflame', 'Terrakion', 'Thundurus', 'Togekiss', 'Tyranitar', 'Venusaur',
+			'Zapdos'
 		]
 	},
 	{
 		name: "Battle Spot Doubles",
-		section: "XY Doubles",
+		section: "ORAS Doubles",
 
 		gameType: 'doubles',
-		onBegin: function () {
-			this.debug('cutting down to 4');
-			this.p1.pokemon = this.p1.pokemon.slice(0, 4);
-			this.p1.pokemonLeft = this.p1.pokemon.length;
-			this.p2.pokemon = this.p2.pokemon.slice(0, 4);
-			this.p2.pokemonLeft = this.p2.pokemon.length;
-		},
 		maxForcedLevel: 50,
 		ruleset: ['Pokemon', 'Standard GBU', 'Team Preview VGC'],
-		validateTeam: function (team, format) {
-			if (team.length < 4) return ['You must bring at least four Pokémon.'];
-		}
-	},
-	{
-		name: "Battle Spot Special 7",
-		section: "XY Doubles",
-
-		gameType: 'doubles',
-		maxForcedLevel: 50,
-		validateTeam: function (team, format) {
-			if (team.length < 4) return ['You must bring at least four Pokémon.'];
-		},
-		ruleset: ['Pokemon', 'Standard GBU', 'Team Preview VGC'],
-		banlist: ['Abomasnow', 'Accelgor', 'Aegislash', 'Aerodactyl', 'Aipom', 'Alomomola', 'Amaura', 'Ambipom', 'Amoonguss', 'Ampharos',
-			'Arbok', 'Arcanine', 'Arceus', 'Archen', 'Archeops', 'Ariados', 'Aromatisse', 'Articuno', 'Audino', 'Aurorus',
-			'Avalugg', 'Axew', 'Azelf', 'Barbaracle', 'Basculin', 'Basculin-Blue-Striped', 'Bastiodon', 'Bayleef', 'Beartic', 'Beedrill',
-			'Beheeyem', 'Bellsprout', 'Bergmite', 'Bibarel', 'Bidoof', 'Binacle', 'Bisharp', 'Blastoise', 'Blissey', 'Blitzle',
-			'Boldore', 'Bonsly', 'Bouffalant', 'Braixen', 'Braviary', 'Bronzong', 'Bronzor', 'Buizel', 'Bulbasaur', 'Buneary',
-			'Bunnelby', 'Burmy', 'Butterfree', 'Carbink', 'Carnivine', 'Carracosta', 'Caterpie', 'Celebi', 'Chandelure', 'Chansey',
-			'Charizard', 'Charmander', 'Charmeleon', 'Chatot', 'Cherrim', 'Cherubi', 'Chesnaught', 'Chespin', 'Chikorita', 'Chimchar',
-			'Cinccino', 'Clauncher', 'Clawitzer', 'Clefable', 'Clefairy', 'Cleffa', 'Cloyster', 'Cobalion', 'Cofagrigus', 'Combee',
-			'Conkeldurr', 'Cottonee', 'Cranidos', 'Cresselia', 'Croagunk', 'Croconaw', 'Crustle', 'Cryogonal', 'Cubchoo', 'Cubone',
-			'Cyndaquil', 'Darkrai', 'Darmanitan', 'Darumaka', 'Dedenne', 'Deerling', 'Deino', 'Delibird', 'Delphox', 'Deoxys',
-			'Deoxys-Attack', 'Deoxys-Defense', 'Deoxys-Speed', 'Dewgong', 'Dewott', 'Dialga', 'Diancie', 'Diggersby', 'Diglett', 'Ditto',
-			'Doublade', 'Dragalge', 'Dragonair', 'Dragonite', 'Drapion', 'Dratini', 'Drifblim', 'Drifloon', 'Drilbur', 'Drowzee',
-			'Druddigon', 'Ducklett', 'Dugtrio', 'Dunsparce', 'Duosion', 'Durant', 'Dwebble', 'Eelektrik', 'Eelektross', 'Eevee',
-			'Ekans', 'Electabuzz', 'Electivire', 'Elekid', 'Elgyem', 'Emboar', 'Emolga', 'Empoleon', 'Entei', 'Escavalier',
-			'Espeon', 'Espurr', 'Excadrill', 'Exeggcute', 'Exeggutor', "Farfetch'd", 'Fearow', 'Fennekin', 'Feraligatr', 'Ferroseed',
-			'Ferrothorn', 'Finneon', 'Flaaffy', 'Flabebe', 'Flareon', 'Fletchinder', 'Fletchling', 'Floatzel', 'Floette', 'Florges',
-			'Foongus', 'Forretress', 'Fraxure', 'Frillish', 'Froakie', 'Frogadier', 'Furfrou', 'Furret', 'Gabite', 'Galvantula',
-			'Garbodor', 'Garchomp', 'Gastly', 'Gastrodon', 'Genesect', 'Gengar', 'Gible', 'Gigalith', 'Giratina', 'Giratina',
-			'Giratina-Origin', 'Glaceon', 'Glameow', 'Gligar', 'Gliscor', 'Gogoat', 'Golett', 'Golurk', 'Goodra', 'Goomy',
-			'Gothita', 'Gothitelle', 'Gothorita', 'Gourgeist', 'Gourgeist-Large', 'Gourgeist-Small', 'Gourgeist-Super', 'Granbull', 'Greninja', 'Grotle',
-			'Groudon', 'Growlithe', 'Gurdurr', 'Happiny', 'Haunter', 'Hawlucha', 'Haxorus', 'Heatmor', 'Heatran', 'Heliolisk',
-			'Helioptile', 'Herdier', 'Hippopotas', 'Hippowdon', 'Hitmonchan', 'Hitmonlee', 'Hitmontop', 'Ho-Oh', 'Honchkrow', 'Honedge',
-			'Hoothoot', 'Hoppip', 'Houndoom', 'Houndour', 'Hydreigon', 'Hypno', 'Infernape', 'Inkay', 'Ivysaur', 'Jellicent',
-			'Jirachi', 'Jolteon', 'Joltik', 'Jumpluff', 'Jynx', 'Kabuto', 'Kabutops', 'Kakuna', 'Kangaskhan', 'Karrablast',
-			'Keldeo', 'Keldeo-Resolute', 'Kingler', 'Klang', 'Klefki', 'Klink', 'Klinklang', 'Krabby', 'Kricketot', 'Kricketune',
-			'Krokorok', 'Krookodile', 'Kyogre', 'Kyurem', 'Kyurem-Black', 'Kyurem-White', 'Lampent', 'Landorus', 'Landorus-Therian', 'Lapras',
-			'Larvesta', 'Larvitar', 'Leafeon', 'Leavanny', 'Ledian', 'Ledyba', 'Lickilicky', 'Lickitung', 'Liepard', 'Lilligant',
-			'Lillipup', 'Litleo', 'Litwick', 'Lopunny', 'Lucario', 'Lugia', 'Lumineon', 'Luxio', 'Luxray', 'Magby',
-			'Magmar', 'Magmortar', 'Malamar', 'Mamoswine', 'Manaphy', 'Mandibuzz', 'Mankey', 'Mantine', 'Mantyke', 'Maractus',
-			'Mareep', 'Marowak', 'Meganium', 'Meloetta', 'Meowstic', 'Meowstic-F', 'Meowth', 'Mesprit', 'Metapod', 'Mew',
-			'Mewtwo', 'Mienfoo', 'Mienshao', 'Miltank', 'Mime Jr.', 'Minccino', 'Misdreavus', 'Mismagius', 'Moltres', 'Monferno',
-			'Mothim', 'Mr. Mime', 'Munchlax', 'Munna', 'Murkrow', 'Musharna', 'Nidoking', 'Nidoqueen', 'Nidoran-F', 'Nidoran-M',
-			'Nidorina', 'Nidorino', 'Noctowl', 'Noibat', 'Noivern', 'Octillery', 'Omanyte', 'Omastar', 'Onix', 'Oshawott',
-			'Pachirisu', 'Palkia', 'Palpitoad', 'Pancham', 'Pangoro', 'Panpour', 'Pansage', 'Pansear', 'Paras', 'Parasect',
-			'Patrat', 'Pawniard', 'Persian', 'Petilil', 'Phantump', 'Phione', 'Pidgeot', 'Pidgeotto', 'Pidgey', 'Pidove',
-			'Pignite', 'Piloswine', 'Pineco', 'Piplup', 'Politoed', 'Poliwag', 'Poliwhirl', 'Poliwrath', 'Ponyta', 'Porygon',
-			'Porygon-Z', 'Porygon2', 'Primeape', 'Prinplup', 'Pumpkaboo', 'Pumpkaboo-Large', 'Pumpkaboo-Small', 'Pumpkaboo-Super', 'Pupitar', 'Purrloin',
-			'Purugly', 'Pyroar', 'Quagsire', 'Quilava', 'Quilladin', 'Qwilfish', 'Raikou', 'Rampardos', 'Rapidash', 'Raticate',
-			'Rattata', 'Rayquaza', 'Regigigas', 'Remoraid', 'Reshiram', 'Reuniclus', 'Riolu', 'Roggenrola', 'Rotom', 'Rotom-Fan',
-			'Rotom-Frost', 'Rotom-Heat', 'Rotom-Mow', 'Rotom-Wash', 'Rufflet', 'Samurott', 'Sandile', 'Sawk', 'Sawsbuck', 'Scatterbug',
-			'Scizor', 'Scolipede', 'Scrafty', 'Scraggy', 'Scyther', 'Seel', 'Seismitoad', 'Sentret', 'Serperior', 'Servine',
-			'Sewaddle', 'Shaymin', 'Shaymin-Sky', 'Shellder', 'Shellos', 'Shelmet', 'Shieldon', 'Shinx', 'Shuckle', 'Sigilyph',
-			'Simipour', 'Simisage', 'Simisear', 'Skiddo', 'Skiploom', 'Skorupi', 'Skrelp', 'Skuntank', 'Sliggoo', 'Slowbro',
-			'Slowking', 'Slowpoke', 'Slurpuff', 'Smeargle', 'Smoochum', 'Sneasel', 'Snivy', 'Snorlax', 'Snover', 'Snubbull',
-			'Solosis', 'Spearow', 'Spewpa', 'Spinarak', 'Spiritomb', 'Spritzee', 'Squirtle', 'Stantler', 'Staraptor', 'Staravia',
-			'Starly', 'Steelix', 'Stoutland', 'Stunfisk', 'Stunky', 'Sudowoodo', 'Suicune', 'Sunflora', 'Sunkern', 'Swadloon',
-			'Swanna', 'Swinub', 'Swirlix', 'Swoobat', 'Sylveon', 'Talonflame', 'Tangela', 'Tangrowth', 'Tauros', 'Teddiursa',
-			'Tepig', 'Terrakion', 'Throh', 'Thundurus', 'Thundurus-Therian', 'Timburr', 'Tirtouga', 'Togekiss', 'Togepi', 'Togetic',
-			'Tornadus', 'Tornadus-Therian', 'Torterra', 'Totodile', 'Toxicroak', 'Tranquill', 'Trevenant', 'Trubbish', 'Turtwig', 'Tympole',
-			'Tynamo', 'Typhlosion', 'Tyranitar', 'Tyrantrum', 'Tyrogue', 'Tyrunt', 'Umbreon', 'Unfezant', 'Unown', 'Ursaring',
-			'Uxie', 'Vanillish', 'Vanillite', 'Vanilluxe', 'Vaporeon', 'Venipede', 'Venomoth', 'Venonat', 'Venusaur', 'Vespiquen',
-			'Victini', 'Victreebel', 'Virizion', 'Vivillon', 'Volcarona', 'Vullaby', 'Wartortle', 'Watchog', 'Weavile', 'Weedle',
-			'Weepinbell', 'Whimsicott', 'Whirlipede', 'Woobat', 'Wooper', 'Wormadam', 'Wormadam-Sandy', 'Wormadam-Trash', 'Xerneas', 'Yamask',
-			'Yanma', 'Yanmega', 'Yveltal', 'Zapdos', 'Zebstrika', 'Zekrom', 'Zoroark', 'Zorua', 'Zweilous', 'Zygarde',
-			'Soul Dew'
-		],
-		onBegin: function () {
-			this.debug('cutting down to 4');
-			this.p1.pokemon = this.p1.pokemon.slice(0, 4);
-			this.p1.pokemonLeft = this.p1.pokemon.length;
-			this.p2.pokemon = this.p2.pokemon.slice(0, 4);
-			this.p2.pokemonLeft = this.p2.pokemon.length;
-		}
-	},
-	{
-		name: "VGC 2014",
-		section: "XY Doubles",
-
-		gameType: 'doubles',
-		onBegin: function () {
-			this.debug('cutting down to 4');
-			this.p1.pokemon = this.p1.pokemon.slice(0, 4);
-			this.p1.pokemonLeft = this.p1.pokemon.length;
-			this.p2.pokemon = this.p2.pokemon.slice(0, 4);
-			this.p2.pokemonLeft = this.p2.pokemon.length;
-		},
-		maxForcedLevel: 50,
-		ruleset: ['Pokemon', 'Standard GBU', 'Team Preview VGC', 'Kalos Pokedex'],
 		requirePentagon: true,
-		banlist: ['Soul Dew', 'Red Orb', 'Blue Orb', 'Swampertite', 'Sceptilite', 'Sablenite', 'Altarianite', 'Galladite', 'Audinite', 'Metagrossite',
-			'Sharpedonite', 'Slowbronite', 'Steelixite', 'Pidgeotite', 'Glalitite', 'Diancite', 'Cameruptite', 'Lopunnite', 'Salamencite', 'Beedrillite'
-		],
 		validateTeam: function (team, format) {
 			if (team.length < 4) return ['You must bring at least four Pokémon.'];
+		},
+		onBegin: function () {
+			this.debug('cutting down to 4');
+			this.p1.pokemon = this.p1.pokemon.slice(0, 4);
+			this.p1.pokemonLeft = this.p1.pokemon.length;
+			this.p2.pokemon = this.p2.pokemon.slice(0, 4);
+			this.p2.pokemonLeft = this.p2.pokemon.length;
+		}
+	},
+	{
+		name: "Battle Spot Special 8",
+		section: "ORAS Doubles",
+
+		gameType: 'doubles',
+		maxForcedLevel: 50,
+		ruleset: ['Pokemon', 'Standard GBU', 'Team Preview VGC'],
+		requirePentagon: true,
+		validateTeam: function (team, format) {
+			if (team.length < 4) return ['You must bring at least four Pokémon.'];
+			for (var i = 0; i < team.length; i++) {
+				var item = this.getItem(team[i].item);
+				if (item.id && !item.isBerry) return ['All items other than berries are banned.'];
+			}
+		},
+		onBegin: function () {
+			this.debug('cutting down to 4');
+			this.p1.pokemon = this.p1.pokemon.slice(0, 4);
+			this.p1.pokemonLeft = this.p1.pokemon.length;
+			this.p2.pokemon = this.p2.pokemon.slice(0, 4);
+			this.p2.pokemonLeft = this.p2.pokemon.length;
+		}
+	},
+	{
+		name: "VGC 2015",
+		section: "ORAS Doubles",
+
+		gameType: 'doubles',
+		maxForcedLevel: 50,
+		ruleset: ['Pokemon', 'Standard GBU', 'Team Preview VGC'],
+		banlist: ['Tornadus + Defiant', 'Thundurus + Defiant', 'Landorus + Sheer Force'],
+		requirePentagon: true,
+		validateTeam: function (team, format) {
+			if (team.length < 4) return ['You must bring at least four Pokémon.'];
+		},
+		onBegin: function () {
+			this.debug('cutting down to 4');
+			this.p1.pokemon = this.p1.pokemon.slice(0, 4);
+			this.p1.pokemonLeft = this.p1.pokemon.length;
+			this.p2.pokemon = this.p2.pokemon.slice(0, 4);
+			this.p2.pokemonLeft = this.p2.pokemon.length;
 		}
 	},
 	{
 		name: "Doubles Challenge Cup",
-		section: 'XY Doubles',
+		section: "ORAS Doubles",
 
 		gameType: 'doubles',
 		team: 'randomCC',
@@ -366,7 +332,7 @@ exports.Formats = [
 	},
 	{
 		name: "Doubles Custom Game",
-		section: "XY Doubles",
+		section: "ORAS Doubles",
 
 		gameType: 'doubles',
 		searchShow: false,
@@ -383,15 +349,15 @@ exports.Formats = [
 
 	{
 		name: "Random Triples Battle",
-		section: "XY Triples",
+		section: "ORAS Triples",
 
 		gameType: 'triples',
 		team: 'randomDoubles',
-		ruleset: ['PotD', 'Pokemon', 'Sleep Clause Mod', 'HP Percentage Mod']
+		ruleset: ['PotD', 'Pokemon', 'HP Percentage Mod']
 	},
 	{
 		name: "Smogon Triples",
-		section: "XY Triples",
+		section: "ORAS Triples",
 
 		gameType: 'triples',
 		ruleset: ['Pokemon', 'Species Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'HP Percentage Mod', 'Team Preview'],
@@ -402,18 +368,19 @@ exports.Formats = [
 	},
 	{
 		name: "Battle Spot Triples",
-		section: "XY Triples",
+		section: "ORAS Triples",
 
 		gameType: 'triples',
 		maxForcedLevel: 50,
 		ruleset: ['Pokemon', 'Standard GBU', 'Team Preview'],
+		requirePentagon: true,
 		validateTeam: function (team, format) {
 			if (team.length < 6) return ['You must have six Pokémon.'];
 		}
 	},
 	{
 		name: "Triples Challenge Cup",
-		section: "XY Triples",
+		section: "ORAS Triples",
 
 		gameType: 'triples',
 		team: 'randomCC',
@@ -422,7 +389,7 @@ exports.Formats = [
 	},
 	{
 		name: "Triples Custom Game",
-		section: "XY Triples",
+		section: "ORAS Triples",
 
 		gameType: 'triples',
 		searchShow: false,
@@ -438,212 +405,181 @@ exports.Formats = [
 	///////////////////////////////////////////////////////////////////
 
 	{
-		name: "Stat Switch",
+		name: "FU",
 		section: "OM of the Month",
 		column: 2,
 
-		mod: 'statswitch',
-		ruleset: ['Pokemon', 'Standard', 'Team Preview', 'Swagger Clause', 'Baton Pass Clause'],
-		banlist: [
-			'Arceus', 'Azumarill', 'Blaziken', 'Darkrai', 'Deoxys', 'Deoxys-Attack', 'Deoxys-Defense', 'Deoxys-Speed',
-			'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon', 'Ho-Oh', 'Kyogre', 'Kyurem-White', 'Lugia', 'Mewtwo', 'Palkia',
-			'Rayquaza', 'Reshiram', 'Xerneas', 'Yveltal', 'Zekrom',
-			'Soul Dew', 'Diancite', 'Gengarite', 'Lucarionite', 'Mawilite', 'Salamencite'
+		ruleset: ['PU'],
+		banlist: ['Altaria', 'Aurorus', 'Avalugg', 'Barbaracle', 'Basculin', 'Basculin-Blue-Striped', 'Bastiodon', 'Beedrill', 'Beheeyem', 'Bouffalant',
+			'Camerupt', 'Carbink', 'Carracosta', 'Chatot', 'Ditto', 'Dodrio', 'Dusclops', 'Dusknoir', 'Electrode', 'Flareon',
+			'Floatzel', 'Garbodor', 'Glalie', 'Golem', 'Gourgeist-Super', 'Haunter', 'Kadabra', 'Kecleon', 'Leafeon', 'Lickilicky',
+			'Lopunny', 'Machoke', 'Mantine', 'Marowak', 'Misdreavus', 'Mr. Mime', 'Ninetales', 'Pelipper', 'Pidgeot', 'Piloswine',
+			'Poliwrath', 'Purugly', 'Raichu', 'Regice', 'Relicanth', 'Roselia', 'Rotom-Frost', 'Scyther', 'Serperior', 'Sneasel',
+			'Stoutland', 'Stunfisk', 'Tangela', 'Tauros', 'Throh', 'Togetic', 'Torterra', 'Victreebel', 'Vigoroth', 'Zebstrika',
+			'Sticky Web'
 		]
 	},
 	{
-		name: "[Seasonal] Strikes Back",
+		name: "[Seasonal] Spacetime Funtimes",
 		section: "OM of the Month",
 
-		gameType: 'triples',
-		team: 'randomSeasonalSB',
+		team: 'randomSeasonalSFT',
 		ruleset: ['HP Percentage Mod', 'Sleep Clause Mod'],
 		onBegin: function () {
-			this.add('-message', "V4 is a big poo-poo!");
+			this.add('message', "Dialga and Palkia have distorted space and time!");
+			// This shouldn't happen.
+			if (!this.seasonal) this.seasonal = {scenario: 'lotr'};
+
+			// Add the message for the scenario.
+			this.add('-message', {
+				'gen1': "It appears that you have travelled to the past! This looks like... 1997!",
+				'lotr': "You find yourselves in middle of an epic battle for Middle Earth!",
+				'redblue': "Wow! You are taking part in the most epic Pokémon fight ever!",
+				'terminator': "You are caught up in the epic apocalyptic battle of the machines against the humans!",
+				'desert': "It's no less than the exodus itself!",
+				'shipwreck': "You're on a giant ship that was rekt by an iceberg. And the fish Pokémon want to eat the sailors!"
+			}[this.seasonal.scenario]);
+
+			// Let's see what's the scenario and change space and time.
+			if (this.seasonal.scenario === 'lotr') {
+				this.addPseudoWeather('wonderroom', this.p1.pokemon[0], null, '[of] Seasonal');
+				delete this.pseudoWeather.wonderroom.duration;
+			} else if (this.seasonal.scenario === 'terminator') {
+				this.addPseudoWeather('trickroom', this.p1.pokemon[0], null, '[of] Seasonal');
+				delete this.pseudoWeather.trickroom.duration;
+			} else if (this.seasonal.scenario === 'gen1') {
+				this.addPseudoWeather('magicroom', this.p1.pokemon[0], null, '[of] Seasonal');
+				delete this.pseudoWeather.magicroom.duration;
+			} else if (this.seasonal.scenario === 'desert') {
+				this.setWeather(['Sandstorm', 'Sunnyday'][this.random(2)]);
+				delete this.weatherData.duration;
+			} else if (this.seasonal.scenario === 'shipwreck') {
+				this.setWeather('raindance');
+				this.addPseudoWeather('watersport', this.p1.pokemon[0], null, '[of] Seasonal');
+				delete this.pseudoWeather.watersport.duration;
+				delete this.weatherData.duration;
+			}
+		},
+		onFaint: function (target, source) {
+			if (this.seasonal.scenario === 'gen1') {
+				if (source && source.removeVolatile) source.removeVolatile('mustrecharge');
+				if (target && target.side) target.side.removeSideCondition('reflect');
+				this.queue = [];
+			}
 		},
 		onModifyMove: function (move) {
-			// Change present mechanics
-			if (move.id === 'present') {
-				move.category = 'Status';
-				move.basePower = 0;
-				delete move.heal;
-				move.accuracy = 100;
-				switch (this.random(16)) {
-				case 0:
-					move.onTryHit = function () {
-						this.add('-message', "The present was a bomb!");
-					};
-					move.category = 'Physical';
-					move.basePower = 250;
-					break;
-				case 1:
-					move.onTryHit = function () {
-						this.add('-message', "The present was confusion!");
-					};
-					move.volatileStatus = 'confusion';
-					break;
-				case 2:
-					move.onTryHit = function () {
-						this.add('-message', "The present was Disable!");
-					};
-					move.volatileStatus = 'disable';
-					break;
-				case 3:
-					move.onTryHit = function () {
-						this.add('-message', "The present was a taunt!");
-					};
-					move.volatileStatus = 'taunt';
-					break;
-				case 4:
-					move.onTryHit = function () {
-						this.add('-message', "The present was some seeds!");
-					};
-					move.volatileStatus = 'leechseed';
-					break;
-				case 5:
-					move.onTryHit = function () {
-						this.add('-message', "The present was an embargo!");
-					};
-					move.volatileStatus = 'embargo';
-					break;
-				case 6:
-					move.onTryHit = function () {
-						this.add('-message', "The present was a music box!");
-					};
-					move.volatileStatus = 'perishsong';
-					break;
-				case 7:
-					move.onTryHit = function () {
-						this.add('-message', "The present was a curse!");
-					};
-					move.volatileStatus = 'curse';
-					break;
-				case 8:
-					move.onTryHit = function () {
-						this.add('-message', "The present was Torment!");
-					};
-					move.volatileStatus = 'torment';
-					break;
-				case 9:
-					move.onTryHit = function () {
-						this.add('-message', "The present was a trap!");
-					};
-					move.volatileStatus = 'partiallytrapped';
-					break;
-				case 10:
-					move.onTryHit = function () {
-						this.add('-message', "The present was a root!");
-					};
-					move.volatileStatus = 'ingrain';
-					break;
-				case 11:
-					move.onTryHit = function () {
-						this.add('-message', "The present was a makeover!");
-					};
-					var boosts = {};
-					var possibleBoosts = ['atk', 'def', 'spa', 'spd', 'spe', 'accuracy', 'evasion'].randomize();
-					boosts[possibleBoosts[0]] = 1;
-					boosts[possibleBoosts[1]] = -1;
-					boosts[possibleBoosts[2]] = -1;
-					move.boosts = boosts;
-					break;
-				case 12:
-					move.onTryHit = function () {
-						this.add('-message', "The present was psychic powers!");
-					};
-					move.volatileStatus = 'telekinesis';
-					break;
-				case 13:
-					move.onTryHit = function () {
-						this.add('-message', "The present was fatigue!");
-					};
-					move.volatileStatus = 'mustrecharge';
-					break;
-				case 14:
-				case 15:
-					move.onTryHit = function () {
-						this.add('-message', "The present was a snowball hit!");
-					};
-					move.category = 'Ice';
-					move.basePower = 250;
-					break;
+			if (this.seasonal.scenario === 'gen1') {
+				if (move.id === 'blizzard') {
+					move.accuracy = 90;
 				}
-			} else {
-				// Change move type time to time only when the move is not present.
-				if (this.random(100) < 35 && move.target !== 'self') {
-					var type = '';
-					switch (move.type.toLowerCase()){
-					case 'rock':
-					case 'ground':
-						type = 'Grass';
-						break;
-					case 'fire':
-					case 'bug':
-						type = 'Water';
-						break;
-					case 'water':
-					case 'grass':
-						type = 'Fire';
-						break;
-					case 'flying':
-						type = 'Fighting';
-						break;
-					case 'fighting':
-						type = 'Flying';
-						break;
-					case 'dark':
-						type = 'Bug';
-						break;
-					case 'dragon':
-					case 'poison':
-						type = 'Fairy';
-						break;
-					case 'electric':
-						type = 'Ice';
-						break;
-					case 'ghost':
-						type = 'Normal';
-						break;
-					case 'ice':
-						type = 'Electric';
-						break;
-					case 'normal':
-						type = 'Ghost';
-						break;
-					case 'psychic':
-						type = 'Dark';
-						break;
-					case 'steel':
-						type = 'Poison';
-						break;
-					case 'fairy':
-						type = 'Dragon';
-						break;
-					}
-
-					move.type = type;
-					this.add('-message', 'LOL trolled I changed yer move type hahaha');
+				if (move.id === 'psychic') {
+					move.secondary = {chance: 33, boosts: {spd: -1, spa: -1}};
+				}
+				if (move.id === 'amnesia') {
+					move.boosts = {spa:2, spd:2};
+				}
+				if (move.id === 'hyperbeam') {
+					move.category = 'Physical';
+				}
+			}
+			if (this.seasonal.scenario === 'lotr') {
+				if (move.id === 'growl') {
+					move.name = 'Throw ring to lava';
+					move.category = 'Special';
+					move.basePower = 160;
+					move.type = 'Fire';
+					move.accuracy = true;
+					move.self = {volatileStatus: 'mustrecharge'};
+					move.onTryHit = function () {
+						this.add('-message', 'Frodo throws the one ring into the lava!');
+					};
+				}
+				if (move.id === 'thousandarrows') {
+					move.onBasePower = function (basePower, pokemon, target) {
+						if (target.name === 'Smaug') {
+							this.add('-message', "Bard's arrow pierces through Smaug's diamond-tough skin!");
+							return this.chainModify(3);
+						}
+					};
 				}
 			}
 		},
 		onSwitchIn: function (pokemon) {
-			if (this.random(100) < 25) {
-				this.add('-message', pokemon.name + " drank way too much!");
-				pokemon.addVolatile('confusion');
-				pokemon.statusData.time = 0;
+			if (this.seasonal.scenario === 'lotr') {
+				if (pokemon.name === 'Frodo') {
+					this.add('-message', 'The One Ring gives power to Frodo!');
+					this.add('-start', pokemon, 'typechange', 'Ground/Fairy');
+					this.boost({def:2, spd:2, evasion:2}, pokemon);
+					pokemon.typesData = [
+						{type: 'Ground', suppressed: false,  isAdded: false},
+						{type: 'Fairy', suppressed: false,  isAdded: true}
+					];
+				}
+				if (pokemon.name === 'Gandalf') {
+					this.add('-message', 'Fly, you fools!');
+					this.boost({spe:1}, pokemon);
+				}
+				if (pokemon.name === 'Saruman') {
+					this.add('-message', 'Against the power of Mordor there can be no victory.');
+					this.boost({spd:1}, pokemon);
+				}
+				if (pokemon.name === 'Legolas') {
+					this.add('-message', "They're taking the hobbits to Isengard!");
+					this.boost({atk:1, spa:1}, pokemon);
+				}
+				if (pokemon.name === 'Boromir') {
+					this.add('-message', 'One does not simply walk into Mordor.');
+					pokemon.addVolatile('confusion');
+				}
+				if (pokemon.name === 'Aragorn') {
+					this.add('-message', 'Aragorn, son of Arathor, king of Gondor.');
+					this.boost({spd:1}, pokemon);
+				}
+				if (pokemon.name === 'Pippin') {
+					this.add('-message', 'How about second breakfast?');
+					this.boost({def:1, spd:1}, pokemon);
+				}
+				if (pokemon.name === 'Merry') {
+					this.add('-message', "I don't think he knows about second breakfast, Pippin.");
+					this.boost({def:1, spd:1}, pokemon);
+				}
+				if (pokemon.name === 'Samwise') {
+					this.add('-message', 'Mr. Frodo!!');
+					this.add('-start', pokemon, 'typechange', 'Normal/Fairy');
+					this.boost({spe:3}, pokemon);
+					pokemon.typesData = [
+						{type: 'Normal', suppressed: false,  isAdded: false},
+						{type: 'Fairy', suppressed: false,  isAdded: true}
+					];
+				}
+				if (pokemon.name === 'Nazgûl') {
+					this.add('-message', 'One ring to rule them all.');
+				}
+				if (pokemon.name === 'Smaug') {
+					this.add('-message', 'I am fire. I am death.');
+				}
+				if (pokemon.name === 'Treebeard') {
+					this.add('-message', 'Come, my friends. The ents are going to war!');
+					this.boost({spe:2}, pokemon);
+				}
+				if (pokemon.name === 'Bard') {
+					this.add('-message', 'Black arrow! Go now and speed well!');
+					this.boost({accuracy:1, evasion:1}, pokemon);
+				}
+				if (pokemon.name === 'Gollum') {
+					this.add('-message', 'My preciousssss!');
+					this.boost({accuracy:6, evasion:1}, pokemon);
+				}
 			}
-		},
-		onFaint: function (pokemon) {
-			// A poem every time a Pokemon faints
-			var haikus = ["You suck a lot / You are a bad trainer / let a mon faint", "they see me driving / round town with the girl i love / and I'm like, haikou",
-			"Ain't no Pokemon tough enough / ain't no bulk decent enough / ain't no recovery good enough / to keep me from fainting you, babe",
-			"Roses are red / violets are blue / you must be on some med / 'coz as a trainer you suck",
-			"You're gonna be the very worst / like no one ever was / to lose all the battles is your test / to faint them all is your cause",
-			'Twinkle twinkle little star / screw you that was my best sweeper', "I'm wheezy and I'm sleezy / but as a trainer you're measly",
-			"You're sharp as a rock / you're bright as a hole / you're one to mock / you could be beaten by a maimed mole",
-			"Alas, poor trainer! I knew him, your Pokémon, a fellow of infinite jest, of most excellent fancy."];
-			haikus = haikus.randomize();
-			this.add('-message', haikus[0]);
+			if (this.seasonal.scenario === 'gen1') {
+				pokemon.side.removeSideCondition('reflect');
+			}
+			if (this.seasonal.scenario === 'desert') {
+				if (pokemon.name === 'Moses') {
+					this.add('-message', 'Let my people go!');
+					this.boost({spd:1}, pokemon);
+				}
+			}
 		}
 	},
 	{
@@ -679,13 +615,21 @@ exports.Formats = [
 		name: "Balanced Hackmons",
 		section: "Other Metagames",
 
-		ruleset: ['Pokemon', 'Ability Clause', 'OHKO Clause', 'Evasion Moves Clause', 'Team Preview', 'HP Percentage Mod'],
+		ruleset: ['Pokemon', 'Ability Clause', '-ate Clause', 'OHKO Clause', 'Evasion Moves Clause', 'Team Preview', 'HP Percentage Mod'],
 		banlist: ['Arena Trap', 'Huge Power', 'Parental Bond', 'Pure Power', 'Shadow Tag', 'Wonder Guard']
 	},
 	{
 		name: "1v1",
 		section: 'Other Metagames',
 
+		ruleset: ['Pokemon', 'Moody Clause', 'OHKO Clause', 'Evasion Moves Clause', 'Swagger Clause', 'Endless Battle Clause', 'HP Percentage Mod', 'Team Preview 1v1'],
+		banlist: ['Illegal', 'Unreleased', 'Arceus', 'Blaziken', 'Darkrai', 'Deoxys', 'Deoxys-Attack', 'Dialga', 'Giratina', 'Giratina-Origin',
+			'Groudon', 'Ho-Oh', 'Kyogre', 'Kyurem-White', 'Lugia', 'Mewtwo', 'Palkia', 'Rayquaza', 'Reshiram', 'Shaymin-Sky',
+			'Xerneas', 'Yveltal', 'Zekrom', 'Focus Sash', 'Kangaskhanite', 'Soul Dew'
+		],
+		validateTeam: function (team, format) {
+			if (team.length > 3) return ['You may only bring up to three Pokémon.'];
+		},
 		onBegin: function () {
 			this.p1.pokemon = this.p1.pokemon.slice(0, 1);
 			this.p1.pokemonLeft = this.p1.pokemon.length;
@@ -708,7 +652,7 @@ exports.Formats = [
 		ruleset: ['Pokemon', 'Standard', 'Baton Pass Clause', 'Swagger Clause', 'Same Type Clause', 'Team Preview'],
 		banlist: ['Arceus', 'Blaziken', 'Darkrai', 'Deoxys', 'Deoxys-Attack', 'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon', 'Ho-Oh',
 			'Kyogre', 'Lugia', 'Mewtwo', 'Palkia', 'Rayquaza', 'Reshiram', 'Talonflame', 'Xerneas', 'Yveltal', 'Zekrom',
-			'Gengarite', 'Kangaskhanite', 'Lucarionite', 'Salamencite', 'Soul Dew'
+			'Gengarite', 'Kangaskhanite', 'Lucarionite', 'Mawilite', 'Salamencite', 'Slowbronite', 'Soul Dew'
 		]
 	},
 	{
@@ -729,15 +673,18 @@ exports.Formats = [
 		name: "Inverse Battle",
 		section: "Other Metagames",
 
-		ruleset: ['OU'],
-		banlist: ['Kyurem-Black', 'Snorlax'],
+		ruleset: ['Pokemon', 'Standard', 'Baton Pass Clause', 'Swagger Clause', 'Team Preview'],
+		banlist: ['Arceus', 'Blaziken', 'Darkrai', 'Deoxys', 'Deoxys-Attack', 'Deoxys-Defense', 'Deoxys-Speed', 'Giratina-Origin', 'Groudon', 'Ho-Oh',
+			'Kyogre', 'Kyurem-Black', 'Kyurem-White', 'Lugia', 'Mewtwo', 'Palkia', 'Rayquaza', 'Reshiram', 'Shaymin-Sky', 'Snorlax',
+			'Xerneas', 'Yveltal', 'Zekrom', 'Gengarite', 'Kangaskhanite', 'Salamencite', 'Soul Dew'
+		],
 		onModifyPokemon: function (pokemon) {
 			pokemon.negateImmunity['Type'] = true;
 		},
 		onEffectiveness: function (typeMod, target, type, move) {
 			// The effectiveness of Freeze Dry on Water isn't reverted
 			if (move && move.id === 'freezedry' && type === 'Water') return;
-			if (move && !this.getImmunity(move, target)) return 1;
+			if (move && !this.getImmunity(move, type)) return 1;
 			return -typeMod;
 		}
 	},
@@ -749,7 +696,7 @@ exports.Formats = [
 		banlist: ['Ignore Illegal Abilities', 'Arceus', 'Archeops', 'Darkrai', 'Deoxys', 'Deoxys-Attack', 'Dialga', 'Giratina', 'Giratina-Origin', 'Groudon',
 			'Ho-Oh', 'Keldeo', 'Kyogre', 'Kyurem-Black', 'Kyurem-White', 'Lugia', 'Mewtwo', 'Palkia', 'Rayquaza', 'Regigigas',
 			'Reshiram', 'Shedinja + Sturdy', 'Slaking', 'Smeargle + Prankster', 'Weavile', 'Xerneas', 'Yveltal', 'Zekrom',
-			'Gengarite', 'Kangaskhanite', 'Lucarionite', 'Salamencite', 'Soul Dew'
+			'Blazikenite', 'Gengarite', 'Kangaskhanite', 'Lucarionite', 'Salamencite', 'Soul Dew'
 		],
 		validateSet: function(set) {
 			var bannedAbilities = {'Aerilate': 1, 'Arena Trap': 1, 'Contrary': 1, 'Fur Coat': 1, 'Huge Power': 1, 'Imposter': 1, 'Parental Bond': 1, 'Pure Power': 1, 'Shadow Tag': 1, 'Simple':1, 'Speed Boost': 1, 'Wonder Guard': 1};
@@ -770,8 +717,8 @@ exports.Formats = [
 		ruleset: ['Pokemon', 'Standard', 'Baton Pass Clause', 'Swagger Clause', 'Team Preview'],
 		banlist: ['Ignore STAB Moves', 'Arceus', 'Blaziken', 'Deoxys', 'Deoxys-Attack', 'Dialga', 'Genesect', 'Giratina', 'Giratina-Origin', 'Groudon',
 			'Ho-Oh', 'Kyogre', 'Kyurem-White', 'Lugia', 'Mewtwo', 'Palkia', 'Porygon-Z', 'Rayquaza', 'Reshiram', 'Shaymin-Sky',
-			'Sylveon', 'Xerneas', 'Yveltal', 'Zekrom',
-			'Altarianite', 'Gengarite', 'Kangaskhanite', "King's Rock", 'Lucarionite', 'Mawilite', 'Razor Claw', 'Salamencite', 'Soul Dew'
+			'Sylveon', 'Xerneas', 'Yveltal', 'Zekrom', 'Altarianite', 'Gengarite', 'Kangaskhanite', "King's Rock", 'Lopunnite', 'Lucarionite',
+			'Mawilite', 'Metagrossite', 'Razor Claw', 'Salamencite', 'Slowbronite', 'Soul Dew'
 		]
 	},
 	{
@@ -808,8 +755,11 @@ exports.Formats = [
 
 		mod: 'averagemons',
 		searchShow: false,
-		ruleset: ['Pokemon', 'Standard', 'Evasion Abilities Clause', 'Swagger Clause', 'Baton Pass Clause', 'Team Preview'],
-		banlist: ['DeepSeaScale', 'DeepSeaTooth', 'Eviolite', 'Light Ball', 'Mawilite', 'Medichamite', 'Soul Dew', 'Thick Club', 'Huge Power', 'Pure Power', 'Shedinja', 'Smeargle']
+		ruleset: ['Pokemon', 'Standard', 'Baton Pass Clause', 'Evasion Abilities Clause', 'Swagger Clause', 'Team Preview'],
+		banlist: ['Gothita', 'Gothorita', 'Gothitelle', 'Sableye', 'Shedinja', 'Smeargle',
+			'DeepSeaScale', 'DeepSeaTooth', 'Eviolite', 'Gengarite', 'Kangaskhanite', 'Light Ball', 'Mawilite', 'Medichamite', 'Soul Dew', 'Thick Club',
+			'Huge Power', 'Pure Power'
+		]
 	},
 	{
 		name: "Classic Hackmons",
@@ -873,7 +823,7 @@ exports.Formats = [
 			}
 		},
 		ruleset: ['Pokemon', 'Standard', 'Team Preview'],
-		banlist: ['Eviolite']
+		banlist: ['Chansey', 'Frogadier', 'Eviolite']
 	},
 	{
 		name: "Sky Battle",
@@ -1127,23 +1077,12 @@ exports.Formats = [
 		ruleset: ['Pokemon', 'HP Percentage Mod']
 	},
 	{
-		name: "[Gen 2] OU (beta)",
+		name: "[Gen 2] OU",
 		section: "Past Generations",
 
 		mod: 'gen2',
 		ruleset: ['Pokemon', 'Standard'],
-		banlist: ['Uber',
-			'Hypnosis + Perish Song + Mean Look',
-			'Hypnosis + Perish Song + Spider Web',
-			'Lovely Kiss + Perish Song + Mean Look',
-			'Lovely Kiss + Perish Song + Spider Web',
-			'Sing + Perish Song + Mean Look',
-			'Sing + Perish Song + Spider Web',
-			'Sleep Powder + Perish Song + Mean Look',
-			'Sleep Powder + Perish Song + Spider Web',
-			'Spore + Perish Song + Mean Look',
-			'Spore + Perish Song + Spider Web'
-		]
+		banlist: ['Uber']
 	},
 	{
 		name: "[Gen 2] Custom Game",
@@ -1155,20 +1094,43 @@ exports.Formats = [
 		ruleset: ['Pokemon', 'HP Percentage Mod']
 	},
 	{
-		name: "[Gen 1] OU (beta)",
+		name: "[Gen 1] OU",
 		section: "Past Generations",
 
 		mod: 'gen1',
 		ruleset: ['Pokemon', 'Standard'],
+		banlist: ['Uber']
+	},
+	{
+		name: "[Gen 1] OU (tradeback)",
+		section: "Past Generations",
+
+		mod: 'gen1',
+		searchShow: false,
+		ruleset: ['Pokemon', 'Sleep Clause Mod', 'Freeze Clause Mod', 'Species Clause', 'OHKO Clause', 'Evasion Moves Clause', 'HP Percentage Mod'],
+		banlist: ['Uber', 'Unreleased', 'Illegal',
+			'Nidoking + Fury Attack + Thrash', 'Exeggutor + Poison Powder + Stomp', 'Exeggutor + Sleep Powder + Stomp',
+			'Exeggutor + Stun Spore + Stomp', 'Jolteon + Focus Energy + Thunder Shock', 'Flareon + Focus Energy + Ember'
+		]
+	},
+	{
+		name: "[Gen 1] Random Battle",
+		section: "Past Generations",
+
+		mod: 'gen1',
+		team: 'random',
+		ruleset: ['Pokemon', 'Sleep Clause Mod', 'Freeze Clause Mod', 'HP Percentage Mod']
+	},
+	{
+		name: "[Gen 1] Stadium",
+		section: "Past Generations",
+
+		mod: 'stadium',
+		searchShow: false,
+		ruleset: ['Pokemon', 'Standard'],
 		banlist: ['Uber',
-			'Kakuna + Poison Sting + Harden', 'Kakuna + String Shot + Harden',
-			'Beedrill + Poison Sting + Harden', 'Beedrill + String Shot + Harden',
-			'Nidoking + Fury Attack + Thrash',
-			'Exeggutor + Poison Powder + Stomp', 'Exeggutor + Sleep Powder + Stomp', 'Exeggutor + Stun Spore + Stomp',
-			'Eevee + Tackle + Growl',
-			'Vaporeon + Tackle + Growl',
-			'Jolteon + Tackle + Growl', 'Jolteon + Focus Energy + Thunder Shock',
-			'Flareon + Tackle + Growl', 'Flareon + Focus Energy + Ember'
+			'Nidoking + Fury Attack + Thrash', 'Exeggutor + Poison Powder + Stomp', 'Exeggutor + Sleep Powder + Stomp',
+			'Exeggutor + Stun Spore + Stomp', 'Jolteon + Focus Energy + Thunder Shock', 'Flareon + Focus Energy + Ember'
 		]
 	},
 	{
@@ -1180,5 +1142,4 @@ exports.Formats = [
 		debug: true,
 		ruleset: ['Pokemon', 'HP Percentage Mod']
 	}
-
 ];

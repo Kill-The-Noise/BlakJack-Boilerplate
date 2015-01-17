@@ -255,6 +255,7 @@ exports.BattleMovedex = {
 			onEnd: function (pokemon) {
 				this.add('-end', pokemon, 'move: Disable');
 			},
+			onBeforeMovePriority: 7,
 			onBeforeMove: function (attacker, defender, move) {
 				if (move.id === this.effectData.move) {
 					this.add('cant', attacker, 'Disable', move);
@@ -265,7 +266,7 @@ exports.BattleMovedex = {
 				var moves = pokemon.moveset;
 				for (var i = 0; i < moves.length; i++) {
 					if (moves[i].id === this.effectData.move) {
-						moves[i].disabled = true;
+						pokemon.disableMove(moves[i].id);
 					}
 				}
 			}

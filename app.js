@@ -463,3 +463,8 @@ global.Components = require('./components.js');
 global.Poll = require('./core.js').core.poll();
 
 global.SysopAccess = require('./core.js').sysopAccess();
+/*********************************************************
+ * Start up the REPL server
+ *********************************************************/
+
+require('./repl.js').start('app', function (cmd) { return eval(cmd); });

@@ -10,13 +10,13 @@
  *
  * @license MIT license
  */
+/* jscs:disable validateIndentation */
 
 //var cluster = require('cluster');
 global.Config = require('./config/config');
 var fakeProcess = new (require('./fake-process').FakeProcess)();
 
 /*if (cluster.isMaster) {
-
 	cluster.setupMaster({
 		exec: 'sockets.js'
 	});*/
@@ -114,12 +114,11 @@ var fakeProcess = new (require('./fake-process').FakeProcess)();
 	exports.subchannelMove = function (worker, channelid, subchannelid, socketid) {
 		worker.send('.' + channelid + '\n' + subchannelid + '\n' + socketid);
 	};
-
 //} else {
 	// is worker
 
 	if (process.env.PSPORT) Config.port = +process.env.PSPORT;
-	if (process.env.PSBINDADDR) Config.bindaddress = process.env.PSBINDADDR;
+	if (process.env.PSBINDADDR) Config.bindAddress = process.env.PSBINDADDR;
 
 	// ofe is optional
 	// if installed, it will heap dump if the process runs out of memory
@@ -437,6 +436,5 @@ var fakeProcess = new (require('./fake-process').FakeProcess)();
 
 	console.log('Test your server at http://' + (Config.bindAddress || 'localhost') + ':' + Config.port);
 
-
-	require('./repl.js').start('sockets-', cluster.worker.id + '-' + process.pid, function (cmd) { return eval(cmd); });
+	require('./repl.js').start('sockets-', /*cluster.worker.id + '-' +*/ process.pid, function (cmd) { return eval(cmd); });
 //}

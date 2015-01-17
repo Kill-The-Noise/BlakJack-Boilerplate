@@ -1,4 +1,5 @@
 /**
+/**
  * Users
  * Pokemon Showdown - http://pokemonshowdown.com/
  *
@@ -92,8 +93,8 @@ var bannedIps = Users.bannedIps = Object.create(null);
 var bannedUsers = Object.create(null);
 var lockedIps = Users.lockedIps = Object.create(null);
 var lockedUsers = Object.create(null);
-var lockedRanges = Users.lockedRanges = Object.create(null);
-var rangelockedUsers = Object.create(null);
+var lockedDomains = Users.lockedDomains = Object.create(null);
+var lockedDomainsUsers = Object.create(null);
 
 /**
  * Searches for IP in table.
@@ -174,50 +175,42 @@ function unlock(name, unlocked, noRecurse) {
 	}
 	return unlocked;
 }
-function lockRange(range, ip) {
-	if (lockedRanges[range]) return;
-	rangelockedUsers[range] = {};
-	if (ip) {
-		lockedIps[range] = range;
-		ip = range.slice(0, -1);
-	}
+function lockDomain(domain) {
+	if (lockedDomains[domain]) return;
+	lockedDomainsUsers[domain] = {};
 	for (var i in users) {
-		var curUser = users[i];
-		if (!curUser.named || curUser.locked || curUser.group !== Config.groupsranking[0]) continue;
-		if (ip) {
-			if (!curUser.latestIp.startsWith(ip)) continue;
-		} else {
-			if (range !== Users.shortenHost(curUser.latestHost)) continue;
+		if (!users[i].named || users[i].locked || users[i].group !== Config.groups.default.global) continue;
+		var shortHost = Users.shortenHost(users[i].latestHost);
+		if (domain === shortHost) {
+			lockedDomainsUsers[domain][users[i].userid] = 1;
+			users[i].locked = '#range';
+			users[i].send("|popup|Your ISP is temporarily locked from talking in chats, battles, and PMing regular users.");
+			users[i].updateIdentity();
 		}
-		rangelockedUsers[range][curUser.userid] = 1;
-		curUser.locked = '#range';
-		curUser.send("|popup|You are in a range that has been temporarily locked from talking in chats and PMing regular users.");
-		curUser.updateIdentity();
 	}
 
 	var time = 90 * 60 * 1000;
-	lockedRanges[range] = setTimeout(function () {
-		unlockRange(range);
+	lockedDomains[domain] = setTimeout(function () {
+		unlockDomain(domain);
 	}, time);
 }
-function unlockRange(range) {
-	if (!lockedRanges[range]) return;
-	clearTimeout(lockedRanges[range]);
-	for (var i in rangelockedUsers[range]) {
+function unlockDomain(domain) {
+	if (!lockedDomains[domain]) return;
+	clearTimeout(lockedDomains[domain]);
+	for (var i in lockedDomainsUsers[domain]) {
 		var user = getUser(i);
 		if (user) {
 			user.locked = false;
 			user.updateIdentity();
 		}
 	}
-	if (lockedIps[range]) delete lockedIps[range];
-	delete lockedRanges[range];
-	delete rangelockedUsers[range];
+	delete lockedDomains[domain];
+	delete lockedDomainsUsers[domain];
 }
 Users.unban = unban;
 Users.unlock = unlock;
-Users.lockRange = lockRange;
-Users.unlockRange = unlockRange;
+Users.lockDomain = lockDomain;
+Users.unlockDomain = unlockDomain;
 
 /*********************************************************
  * Routing
@@ -292,9 +285,9 @@ Users.socketConnect = function (worker, workerid, socketid, ip) {
 			if (Config.hostfilter) Config.hostfilter(hosts[0], user);
 			if (user.named && !user.locked && user.group === Config.groups.default.global) {
 				var shortHost = Users.shortenHost(hosts[0]);
-				if (lockedRanges[shortHost]) {
-					user.send("|popup|You are in a range that has been temporarily locked from talking in chats and PMing regular users.");
-					rangelockedUsers[shortHost][user.userid] = 1;
+				if (lockedDomains[shortHost]) {
+					user.send("|popup|Your ISP is temporarily locked from talking in chats, battles, and PMing regular users.");
+					lockedDomainsUsers[shortHost][user.userid] = 1;
 					user.locked = '#range';
 					user.updateIdentity();
 				}
@@ -574,12 +567,8 @@ User = (function () {
 			if (room.auth[this.userid]) {
 				return room.auth[this.userid] + this.name;
 			}
-			var room = Rooms.rooms[roomid];
-			if (room && room.auth) {
-				if (room.auth[this.userid]) {
-					return room.auth[this.userid] + this.name;
-				}
-				if (room.isPrivate === true) return ' ' + this.name;
+			if (room.isPrivate === true) {
+				return Config.groups.default[room.type + 'Room'] + this.name;
 			}
 		}
 		return this.group + this.name;
@@ -606,14 +595,14 @@ User = (function () {
 			if (room.auth[this.userid]) {
 				group = room.auth[this.userid];
 			} else if (room.isPrivate === true) {
-				group = ' ';
+				group = Config.groups.default[room.type + 'Room'];
 			}
 
 			if (target) {
 				if (room.auth[target.userid]) {
 					targetGroup = room.auth[target.userid];
-				} else if (room.isPrivate === true) {
-					targetGroup = ' ';
+					} else if (room.isPrivate === true) {
+ 					targetGroup = Config.groups.default[room.type + 'Room'];
 				}
 			}
 		}
@@ -700,19 +689,15 @@ User = (function () {
 			this.send("|popup|Your username (" + name + ") is locked" + bannedUnder + "'. Your lock will expire in a few days." + (Config.appealurl ? " Or you can appeal at:\n" + Config.appealurl : ""));
 			this.lock(true, userid);
 		}
-		if (this.group === Config.groups.default.global) {
-			var range = this.locked || Users.shortenHost(this.latestHost);
-			if (lockedRanges[range]) {
-				this.send("|popup|You are in a range that has been temporarily locked from talking in chats and PMing regular users.");
-				rangelockedUsers[range][this.userid] = 1;
+		if (!this.locked && this.group === Config.groups.default.global) {
+			var shortHost = Users.shortenHost(this.latestHost);
+			if (lockedDomains[shortHost]) {
+				this.send("|popup|Your ISP is temporarily locked from talking in chats, battles, and PMing regular users.");
+				lockedDomainsUsers[shortHost][userid] = 1;
 				this.locked = '#range';
 				this.updateIdentity();
 			}
-		} else if (this.locked && lockedRanges[this.locked]) {
-			this.locked = false;
-			this.updateIdentity();
 		}
-
 		this.name = name;
 		var oldid = this.userid;
 		delete users[oldid];
@@ -1314,7 +1299,7 @@ User = (function () {
 			}
 		}
 		if (!connection) {
-			for (var i = 0; i < this.connections.length; i++) {
+			for (var i = 0; i < this.connections.length;i++) {
 				// only join full clients, not pop-out single-room
 				// clients
 				if (this.connections[i].rooms['global']) {

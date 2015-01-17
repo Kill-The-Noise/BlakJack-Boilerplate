@@ -76,6 +76,7 @@ Tournament = (function () {
 		this.format = toId(format);
 		this.generator = generator;
 		this.isRated = isRated;
+		
 
 		this.isBracketInvalidated = true;
 		this.lastBracketUpdate = 0;
@@ -237,7 +238,7 @@ Tournament = (function () {
 		}
 
 		if (!isAllowAlts) {
-			var users = {};
+		var users = {};
 			this.generator.getUsers().forEach(function (user) { users[user.name] = 1; });
 			var alts = user.getAlts();
 			for (var a = 0; a < alts.length; ++a) {
@@ -629,7 +630,7 @@ Tournament = (function () {
 		if (!this.pendingChallenges.get(challenge.from)) return;
 		if (!this.pendingChallenges.get(user)) return;
 
-		var room = Rooms.global.startBattle(challenge.from, user, this.format, this.isRated, challenge.team, user.team);
+		var room = Rooms.global.startBattle(challenge.from, user, this.format, challenge.team, user.team, {rated: this.isRated, tour: this});
 		if (!room) return;
 
 		this.pendingChallenges.set(challenge.from, null);
@@ -648,24 +649,24 @@ Tournament = (function () {
 	Tournament.prototype.onBattleWin = function (room, winner) {
         var from = Users.get(room.p1),
             to = Users.get(room.p2),
-            fromElo = Number(Core.stdin('elo', toId(from))),
-            toElo = Number(Core.stdin('elo', toId(to))), arr;
+            fromElo = Number(Core.stdin('db/elo', toId(from))),
+            toElo = Number(Core.stdin('db/elo', toId(to))), arr;
 
         var result = 'draw';
         if (from === winner) {
             result = 'win';
             if (this.room.isOfficial && this.generator.users.size >= Core.tournaments.tourSize) {
                 arr = Core.calculateElo(fromElo, toElo);
-                Core.stdout('elo', toId(from), arr[0], function () {
-                    Core.stdout('elo', toId(to), arr[1]);
+                Core.stdout('db/elo', toId(from), arr[0], function () {
+                    Core.stdout('db/elo', toId(to), arr[1]);
                 });
             }
         } else if (to === winner) {
             result = 'loss';
             if (this.room.isOfficial && this.generator.users.size >= Core.tournaments.tourSize) {
                 arr = Core.calculateElo(toElo, fromElo);
-                Core.stdout('elo', toId(to), arr[0], function () {
-                    Core.stdout('elo', toId(from), arr[1]);
+                Core.stdout('db/elo', toId(to), arr[0], function () {
+                    Core.stdout('db/elo', toId(from), arr[1]);
                 });
             }
         }
@@ -749,24 +750,24 @@ Tournament = (function () {
 
             // file i/o
             var winnerMoney = Number(Core.stdin('money', wid));
-            var tourWin = Number(Core.stdin('tourWins', wid));
+            var tourWin = Number(Core.stdin('db/tourWins', wid));
             Core.stdout('money', wid, (winnerMoney + firstMoney), function () {
-                var winnerElo = Number(Core.stdin('elo', wid));
+                var winnerElo = Number(Core.stdin('db/elo', wid));
                 if (winnerElo === 0) winnerElo = 1000;
                 if (runnerUp) {
                     var runnerUpMoney = Number(Core.stdin('money', rid)),
-                        runnerUpElo = Number(Core.stdin('elo', rid));
+                        runnerUpElo = Number(Core.stdin('db/elo', rid));
                     if (runnerUpElo === 0) runnerUpElo = 1000;
                     Core.stdout('money', rid, (runnerUpMoney + secondMoney), function () {
-                        Core.stdout('tourWins', wid, (tourWin + 1), function () {
-                            Core.stdout('elo', wid, (winnerElo + Core.tournaments.winningElo), function () {
-                                Core.stdout('elo', rid, (runnerUpElo + Core.tournaments.runnerUpElo));
+                        Core.stdout('db/tourWins', wid, (tourWin + 1), function () {
+                            Core.stdout('db/elo', wid, (winnerElo + Core.tournaments.winningElo), function () {
+                                Core.stdout('db/elo', rid, (runnerUpElo + Core.tournaments.runnerUpElo));
                             });
                         });
                     });
                 } else {
-                    Core.stdout('tourWins', wid, (tourWin + 1), function () {
-                        Core.stdout('elo', wid, (winnerElo + Core.tournaments.winningElo));
+                    Core.stdout('db/tourWins', wid, (tourWin + 1), function () {
+                        Core.stdout('db/elo', wid, (winnerElo + Core.tournaments.winningElo));
                     });
                 }
             });
@@ -796,8 +797,8 @@ var commands = {
 		},
 		getusers: function (tournament) {
 			if (!this.canBroadcast()) return;
-			var users = usersToNames(tournament.generator.getUsers(true).sort());
-			this.sendReplyBox("<strong>" + users.length + " users remain in this tournament:</strong><br />" + Tools.escapeHTML(users.join(", ")));
+			var users = usersToNames(tournament.generator.getUsers().sort());
+			this.sendReplyBox("<strong>" + users.length + " users are in this tournament:</strong><br />" + users.join(", "));
 		},
 		getupdate: function (tournament, user) {
 			tournament.updateFor(user);
@@ -940,7 +941,7 @@ CommandParser.commands.tournament = function (paramString, room, user) {
 				return this.sendReply(cmd + " -  Access denied.");
 			}
 		} else {
-			if (!user.can('tournamentsmanagement', room)) {
+			if (!user.can('tournamentsmanagement', null, room)) {
 				return this.sendReply("Tournaments are disabled in this room (" + room.id + ").");
 			}
 		}
@@ -967,7 +968,7 @@ CommandParser.commands.tournament = function (paramString, room, user) {
 					return this.sendReply(cmd + " -  Access denied.");
 				}
 			} else {
-				if (!user.can('tournamentsmanagement', room)) {
+				if (!user.can('tournamentsmanagement', null, room)) {
 					return this.sendReply("Tournaments are disabled in this room (" + room.id + ").");
 				}
 			}

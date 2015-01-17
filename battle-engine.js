@@ -444,7 +444,7 @@ BattlePokemon = (function () {
 			stat = this.battle.modify(stat, statMod);
 		}
 		if (this.battle.getStatCallback) {
-			stat = this.battle.getStatCallback(stat, statName, this);
+			stat = this.battle.getStatCallback(stat, statName, this, unboosted);
 		}
 		return stat;
 	};
@@ -1045,6 +1045,7 @@ BattlePokemon = (function () {
 		}
 		if (ability.id in {illusion:1, multitype:1, stancechange:1}) return false;
 		if (oldAbility in {multitype:1, stancechange:1}) return false;
+		this.battle.singleEvent('End', this.battle.getAbility(oldAbility), this.abilityData, this, source, effect);
 		this.ability = ability.id;
 		this.abilityData = {id: ability.id, target: this};
 		if (ability.id && this.battle.gen > 3) {
@@ -1142,7 +1143,7 @@ BattlePokemon = (function () {
 	BattlePokemon.getHealth = function (side) {
 		if (!this.hp) return '0 fnt';
 		var hpstring;
-		if ((side === true) || (this.side === side) || this.battle.getFormat().debug || this.battle.reportExactHP) {
+		if ((side === true) || (this.side === side) || this.battle.getFormat().debug) {
 			hpstring = '' + this.hp + '/' + this.maxhp;
 		} else {
 			var ratio = this.hp / this.maxhp;
@@ -1834,7 +1835,7 @@ Battle = (function () {
 	Battle.prototype.eachEvent = function (eventid, effect, relayVar) {
 		var actives = [];
 		if (!effect && this.effect) effect = this.effect;
-		for (var i = 0; i < this.sides.length; i++) {
+		for (var i = 0; i < this.sides.length;i++) {
 			var side = this.sides[i];
 			for (var j = 0; j < side.active.length; j++) {
 				if (side.active[j]) actives.push(side.active[j]);
@@ -1892,7 +1893,7 @@ Battle = (function () {
 			// it's changed; call it off
 			return relayVar;
 		}
-		if (target.ignore && target.ignore[effect.effectType]) {
+		if (target.ignore && target.ignore[effect.effectType] && target.ignore[effect.effectType] !== 'A') {
 			this.debug(eventid + ' handler suppressed by Gastro Acid, Klutz or Magic Room');
 			return relayVar;
 		}
@@ -2218,7 +2219,7 @@ Battle = (function () {
 				statuses = statuses.concat(this.getRelevantEffectsInner(this, callbackType, null, null, true, false, getAll));
 			}
 			if (bubbleDown) {
-				for (var i = 0; i < thing.active.length; i++) {
+				for (var i = 0;i < thing.active.length;i++) {
 					statuses = statuses.concat(this.getRelevantEffectsInner(thing.active[i], callbackType, null, null, false, true, getAll));
 				}
 			}
@@ -2516,6 +2517,7 @@ Battle = (function () {
 				return false;
 			}
 			this.runEvent('SwitchOut', oldActive);
+			this.singleEvent('End', this.getAbility(oldActive.ability), oldActive.abilityData, oldActive);
 			oldActive.isActive = false;
 			oldActive.isStarted = false;
 			oldActive.position = pokemon.position;
@@ -3147,6 +3149,7 @@ Battle = (function () {
 			if (!faintData.target.fainted) {
 				this.add('faint', faintData.target);
 				this.runEvent('Faint', faintData.target, faintData.source, faintData.effect);
+				this.singleEvent('End', this.getAbility(faintData.target.ability), faintData.target.abilityData, faintData.target);
 				faintData.target.fainted = true;
 				faintData.target.isActive = false;
 				faintData.target.isStarted = false;
@@ -3155,8 +3158,8 @@ Battle = (function () {
 			}
 		}
 
-		if (this.gen <= 1) {
-			// in gen 1, fainting skips the rest of the turn, including residuals
+		if (this.gen <= 2) {
+			// in gen 1-2, fainting skips the rest of the turn, including residuals
 			this.queue = [];
 		} else if (this.gen <= 3 && this.gameType === 'singles') {
 			// in gen 3 or earlier, fainting in singles skips to residuals
@@ -3414,6 +3417,7 @@ Battle = (function () {
 					// a switch-out.
 					break;
 				}
+				this.singleEvent('End', this.getAbility(decision.pokemon.ability), decision.pokemon.abilityData, decision.pokemon);
 			}
 			if (decision.pokemon && !decision.pokemon.hp && !decision.pokemon.fainted) {
 				// a pokemon fainted from Pursuit before it could switch

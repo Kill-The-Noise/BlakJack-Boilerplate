@@ -3,7 +3,7 @@
  * Pokemon Showdown - http://pokemonshowdown.com/
  *
  * These are system commands - commands required for Pokemon Showdown
- * to run. A lot of these are sent by the client.
+ * to run. A lot of these are sent by the clientr
  *
  * If you'd like to modify commands, please go to config/commands.js,
  * which also teaches you how to use commands.
@@ -499,13 +499,18 @@ var commands = exports.commands = {
 		if (targetUser) targetUser.updateIdentity();
 		if (room.chatRoomData) Rooms.global.writeChatRoomData();
 	},
-reload: function (target, room, user) {
+	
+	reload: function (target, room, user) {
         if (!this.can('reload')) return;
 
         try {
             this.sendReply('Reloading CommandParser...');
-            CommandParser.uncacheTree(path.join(__dirname, './', './command-parser.js'));
-            CommandParser = require(path.join(__dirname, './', './command-parser.js'));
+            CommandParser.uncacheTree(path.join(__dirname, './', 'command-parser.js'));
+            CommandParser = require(path.join(__dirname, './', 'command-parser.js'));
+
+            this.sendReply('Reloading Bot...');
+            CommandParser.uncacheTree(path.join(__dirname, './', 'bot.js'));
+            Bot = require(path.join(__dirname, './', 'bot.js'));
 
             this.sendReply('Reloading Tournaments...');
             var runningTournaments = Tournaments.tournaments;
@@ -514,29 +519,22 @@ reload: function (target, room, user) {
             Tournaments.tournaments = runningTournaments;
             
             this.sendReply('Reloading Core...');
-            CommandParser.uncacheTree(path.join(__dirname, './', './source/core.js'));
-            Core = require(path.join(__dirname, './', './source/core.js')).core;
-			
-			this.sendReply('Reloading Hangman...');
-            CommandParser.uncacheTree(path.join(__dirname, './', './source/hangman.js'));
-            hangman = require(path.join(__dirname, './', './source/hangman.js')).hangman;
+            CommandParser.uncacheTree(path.join(__dirname, './', './core.js'));
+            Core = require(path.join(__dirname, './', './core.js')).core;
 
-            this.sendReply('Reloading custom-commands.js...');
-	        CommandParser.uncacheTree(path.join(__dirname, './', './source/custom-commands.js'));
-	        customcommands = require(path.join(__dirname, './', './source/custom-commands.js'));
-	        CommandParser.uncacheTree(path.join(__dirname, './', './source/trainer-cards.js'));
-	        trainercards = require(path.join(__dirname, './', './source/trainer-cards.js'));
-			
-            this.sendReply('Reloading SysopAccess...');	
-            CommandParser.uncacheTree(path.join(__dirname, './', './source/core.js'));
-            SysopAccess = require(path.join(__dirname, './', './source/core.js'));
+            this.sendReply('Reloading Components...');
+            CommandParser.uncacheTree(path.join(__dirname, './', './components.js'));
+            Components = require(path.join(__dirname, './', './components.js'));
+
+            this.sendReply('Reloading SysopAccess...');
+            CommandParser.uncacheTree(path.join(__dirname, './', './core.js'));
+            SysopAccess = require(path.join(__dirname, './', './core.js'));
 
             return this.sendReply('|raw|<font color="green">All files have been reloaded.</font>');
         } catch (e) {
             return this.sendReply('|raw|<font color="red">Something failed while trying to reload files:</font> \n' + e.stack);
         }
     },
-
 
 
 	roomauth: function (target, room, user, connection) {

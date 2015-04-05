@@ -1,5 +1,3 @@
-require('es6-shim');
-
 const BRACKET_MINIMUM_UPDATE_INTERVAL = 2 * 1000;
 const AUTO_DISQUALIFY_WARNING_TIMEOUT = 30 * 1000;
 
@@ -259,6 +257,8 @@ Tournament = (function () {
 		user.sendTo(this.room, '|tournament|update|{"isJoined":true}');
 		this.isBracketInvalidated = true;
 		this.update();
+		if (this.playerCap === (users.length + 1)) this.room.add("The tournament is now full.");
+
 	};
 	Tournament.prototype.removeUser = function (user, output) {
 		var error = this.generator.removeUser(user);
@@ -346,7 +346,8 @@ Tournament = (function () {
 		}
 
 		this.purgeGhostUsers();
-		if (this.generator.getUsers().length < 2) {
+		var users = this.generator.getUsers();
+		if (users.length < 2) {
 			output.sendReply('|tournament|error|NotEnoughUsers');
 			return false;
 		}
@@ -359,13 +360,8 @@ Tournament = (function () {
 		this.disqualifiedUsers = new Map();
 		this.isAutoDisqualifyWarned = new Map();
 		this.lastActionTimes = new Map();
-		var users = this.generator.getUsers();
 		users.forEach(function (user) {
-			var availableMatches = new Map();
-			users.forEach(function (user) {
-				availableMatches.set(user, false);
-			});
-			this.availableMatches.set(user, availableMatches);
+			this.availableMatches.set(user, new Map());
 			this.inProgressMatches.set(user, null);
 			this.pendingChallenges.set(user, null);
 			this.disqualifiedUsers.set(user, false);
@@ -391,19 +387,19 @@ Tournament = (function () {
 		var users = this.generator.getUsers();
 		var challenges = new Map();
 		var challengeBys = new Map();
-		var oldAvailableMatchCounts = new Map();
+		var oldAvailableMatches = new Map();
 
 		users.forEach(function (user) {
 			challenges.set(user, []);
 			challengeBys.set(user, []);
 
+			var oldAvailableMatch = false;
 			var availableMatches = this.availableMatches.get(user);
-			var oldAvailableMatchCount = 0;
-			availableMatches.forEach(function (isAvailable, user) {
-				oldAvailableMatchCount += isAvailable;
-				availableMatches.set(user, false);
-			});
-			oldAvailableMatchCounts.set(user, oldAvailableMatchCount);
+			if (availableMatches.size) {
+				oldAvailableMatch = true;
+				availableMatches.clear();
+			}
+			oldAvailableMatches.set(user, oldAvailableMatch);
 		}, this);
 
 		matches.forEach(function (match) {
@@ -414,13 +410,9 @@ Tournament = (function () {
 		}, this);
 
 		this.availableMatches.forEach(function (availableMatches, user) {
-			if (oldAvailableMatchCounts.get(user) !== 0) return;
+			if (oldAvailableMatches.get(user)) return;
 
-			var availableMatchCount = 0;
-			availableMatches.forEach(function (isAvailable, user) {
-				availableMatchCount += isAvailable;
-			});
-			if (availableMatchCount > 0) this.lastActionTimes.set(user, Date.now());
+			if (availableMatches.size) this.lastActionTimes.set(user, Date.now());
 		}, this);
 
 		return {
@@ -517,13 +509,11 @@ Tournament = (function () {
 			return false;
 		}
 		this.lastActionTimes.forEach(function (time, user) {
-			var availableMatches = 0;
-			this.availableMatches.get(user).forEach(function (isAvailable) {
-				availableMatches += isAvailable;
-			});
+			var availableMatches = false;
+			if (this.availableMatches.get(user).size) availableMatches = true;
 			var pendingChallenge = this.pendingChallenges.get(user);
 
-			if (availableMatches === 0 && !pendingChallenge) return;
+			if (!availableMatches && !pendingChallenge) return;
 			if (pendingChallenge && pendingChallenge.to) return;
 
 			if (Date.now() > time + this.autoDisqualifyTimeout && this.isAutoDisqualifyWarned.get(user)) {
@@ -949,8 +939,14 @@ CommandParser.commands.tournament = function (paramString, room, user) {
 			return this.sendReply("Usage: " + cmd + " <format>, <type> [, <comma-separated arguments>]");
 		}
 
-		var tour = createTournament(room, params.shift(), params.shift(), Config.isTournamentsRated, params, this);
-		if (tour) this.privateModCommand("(" + user.name + " created a tournament in " + tour.format + " format.)");
+		var tour = createTournament(room, params.shift(), params.shift(), params.shift(), Config.istournamentsrated, params, this);
+		if (tour) {
+			this.privateModCommand("(" + user.name + " created a tournament in " + tour.format + " format.)");
+			if (Config.tourannouncements && Config.tourannouncements.indexOf(room.id) >= 0) {
+				var tourRoom = Rooms.search(Config.tourroom || 'tournaments');
+				if (tourRoom) tourRoom.addRaw('<div class="infobox"><a href="/' + room.id + '" class="ilink"><b>' + Tools.getFormat(tour.format).name + '</b> tournament created in <b>' + room.title + '</b>.</a></div>');
+			}
+		}
 	} else {
 		var tournament = getTournament(room.title);
 		if (!tournament) {

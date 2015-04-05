@@ -8,22 +8,22 @@ exports.BattleFormats = {
 
 	standard: {
 		effectType: 'Banlist',
-		ruleset: ['Sleep Clause Mod', 'Species Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'HP Percentage Mod'],
+		ruleset: ['Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'HP Percentage Mod', 'Cancel Mod'],
 		banlist: ['Unreleased', 'Illegal']
 	},
 	standardnext: {
 		effectType: 'Banlist',
-		ruleset: ['Sleep Clause Mod', 'Species Clause', 'OHKO Clause', 'HP Percentage Mod'],
+		ruleset: ['Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'OHKO Clause', 'HP Percentage Mod', 'Cancel Mod'],
 		banlist: ['Illegal', 'Soul Dew']
 	},
 	standardubers: {
 		effectType: 'Banlist',
-		ruleset: ['Sleep Clause Mod', 'Species Clause', 'Moody Clause', 'OHKO Clause', 'Endless Battle Clause', 'HP Percentage Mod'],
+		ruleset: ['Sleep Clause Mod', 'Species Clause', 'Nickname Clause', 'Moody Clause', 'OHKO Clause', 'Endless Battle Clause', 'HP Percentage Mod', 'Cancel Mod'],
 		banlist: ['Unreleased', 'Illegal']
 	},
 	standardgbu: {
 		effectType: 'Banlist',
-		ruleset: ['Species Clause', 'Item Clause'],
+		ruleset: ['Species Clause', 'Nickname Clause', 'Item Clause', 'Cancel Mod'],
 		banlist: ['Unreleased', 'Illegal', 'Soul Dew',
 			'Mewtwo',
 			'Mew',
@@ -58,16 +58,34 @@ exports.BattleFormats = {
 	},
 	standarddoubles: {
 		effectType: 'Banlist',
-		ruleset: ['Species Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Abilities Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'HP Percentage Mod'],
+		ruleset: ['Species Clause', 'Nickname Clause', 'OHKO Clause', 'Moody Clause', 'Evasion Abilities Clause', 'Evasion Moves Clause', 'Endless Battle Clause', 'HP Percentage Mod', 'Cancel Mod'],
 		banlist: ['Unreleased', 'Illegal']
 	},
 	pokemon: {
 		effectType: 'Banlist',
-		validateSet: function (set, format, isNonstandard) {
+		validateTeam: function (team, format) {
+			var problems = [];
+			// ----------- legality line ------------------------------------------
+			if (!format || !format.banlistTable || !format.banlistTable['illegal']) return problems;
+			// everything after this line only happens if we're doing legality enforcement
+			var kyurems = 0;
+			for (var i = 0; i < team.length; i++) {
+				if (team[i].species === 'Kyurem-White' || team[i].species === 'Kyurem-Black') {
+					if (kyurems > 0) {
+						problems.push('You cannot have more than one Kyurem-Black/Kyurem-White.');
+						break;
+					}
+					kyurems++;
+				}
+			}
+			return problems;
+		},
+		validateSet: function (set, format) {
 			var item = this.getItem(set.item);
 			var template = this.getTemplate(set.species);
 			var problems = [];
 			var totalEV = 0;
+			var allowCAP = !!(format && format.banlistTable && format.banlistTable['allowcap']);
 
 			if (set.species === set.name) delete set.name;
 			if (template.gen > this.gen) {
@@ -85,7 +103,7 @@ exports.BattleFormats = {
 					var move = this.getMove(set.moves[i]);
 					if (move.gen > this.gen) {
 						problems.push(move.name + ' does not exist in gen ' + this.gen + '.');
-					} else if (!isNonstandard && move.isNonstandard) {
+					} else if (!allowCAP && move.isNonstandard) {
 						problems.push(move.name + ' is not a real move.');
 					}
 				}
@@ -100,7 +118,7 @@ exports.BattleFormats = {
 				problems.push((set.name || set.species) + ' is higher than level 100.');
 			}
 
-			if (!isNonstandard) {
+			if (!allowCAP || template.tier !== 'CAP') {
 				if (template.isNonstandard) {
 					problems.push(set.species + ' is not a real Pokemon.');
 				}
@@ -245,12 +263,6 @@ exports.BattleFormats = {
 			return problems;
 		}
 	},
-	cappokemon: {
-		effectType: 'Rule',
-		validateSet: function (set, format) {
-			return this.getEffect('Pokemon').validateSet.call(this, set, format, true);
-		}
-	},
 	kalospokedex: {
 		effectType: 'Rule',
 		validateSet: function (set) {
@@ -367,6 +379,24 @@ exports.BattleFormats = {
 				}
 				speciesTable[template.num] = true;
 			}
+		}
+	},
+	nicknameclause: {
+		effectType: 'Rule',
+		validateTeam: function (team, format) {
+			var nameTable = {};
+			for (var i = 0; i < team.length; i++) {
+				var name = team[i].name;
+				if (name) {
+					if (name === team[i].species) continue;
+					if (nameTable[name]) {
+						return ["Your Pokémon must have different nicknames.",  "(You have more than one " + name + ")"];
+					}
+					nameTable[name] = true;
+				}
+			}
+			// Illegality of impersonation of other species is
+			// hardcoded in team-validator.js, so we are done.
 		}
 	},
 	itemclause: {
@@ -514,6 +544,12 @@ exports.BattleFormats = {
 			this.reportExactHP = true;
 		}
 	},
+	cancelmod: {
+		effectType: 'Rule',
+		onStart: function () {
+			this.supportCancel = true;
+		}
+	},
 	sleepclausemod: {
 		effectType: 'Rule',
 		onStart: function () {
@@ -526,9 +562,8 @@ exports.BattleFormats = {
 			if (status.id === 'slp') {
 				for (var i = 0; i < target.side.pokemon.length; i++) {
 					var pokemon = target.side.pokemon[i];
-					if (pokemon.status === 'slp') {
-						if (!pokemon.statusData.source ||
-							pokemon.statusData.source.side !== pokemon.side) {
+					if (pokemon.hp && pokemon.status === 'slp') {
+						if (!pokemon.statusData.source || pokemon.statusData.source.side !== pokemon.side) {
 							this.add('-message', 'Sleep Clause Mod activated.');
 							return false;
 						}
@@ -581,8 +616,8 @@ exports.BattleFormats = {
 				case 'Dragon':
 					if (teamHas['kyuremwhite']) return ["Kyurem-White is banned from Dragon monotype teams."];
 					break;
-				case 'Flying':
-					if (teamHas['shayminsky']) return ["Shaymin-Sky is banned from Flying monotype teams."];
+				case 'Psychic':
+					if (teamHas['galladite']) return ["Galladite is banned from Psychic monotype teams."];
 					break;
 				case 'Steel':
 					if (teamHas['aegislash']) return ["Aegislash is banned from Steel monotype teams."];
@@ -591,6 +626,64 @@ exports.BattleFormats = {
 				case 'Water':
 					if (teamHas['damprock']) return ["Damp Rock is banned from Water monotype teams."];
 				}
+			}
+		}
+	},
+	monotypeexceptionclause: {
+                effectType: 'Rule',
+                onStart: function() {
+                        this.add('rule', 'Monotype Exception Clause: Monotype teams follow their own set of rules, ignoring normal OU rules.');
+                },
+                validateTeam: function(team, format, teamHas) {
+                        if (!team[0]) return;
+                        var isMono = true;
+                        var template = this.getTemplate(team[0].species);
+                        var typeTable = template.types;
+                        if (!typeTable) isMono = false;
+                        for (var i = 1; i < team.length; i++) {
+                                template = this.getTemplate(team[i].species);
+                                if (!template.types) isMono = false;
+
+                                typeTable = typeTable.intersect(template.types);
+                                if (!typeTable.length) isMono = false;
+                        }
+
+                        if (!isMono) {
+                                var oubans = ['kyuremwhite', 'shayminsky', 'aegislash', 'mawilite', 'genesect', 'genesectdouse', 'genesectshock', 'genesectburn', 'genesectchill'];
+                                for (var x = 0; x < oubans.length; x++) {
+                                        var bannedName = this.data.Pokedex[oubans[x]] || this.getItem(oubans[x]);
+                                        if (teamHas[oubans[x]]) return [bannedName.name + " is banned from OU teams."];
+                                }
+                        } else {
+                                // Very complex bans
+                                if (typeTable.length > 1) return;
+                                if (teamHas['talonflame']) return ["Talonflame is banned from Monotype teams."];
+                                switch (typeTable[0]) {
+                                        case 'Dragon':
+                                                if (teamHas['kyuremwhite']) return ["Kyurem-White is banned from Dragon monotype teams."];
+                                                break;
+                                        case 'Flying':
+                                                if (teamHas['shayminsky']) return ["Shaymin-Sky is banned from Flying monotype teams."];
+                                                break;
+                                        case 'Steel':
+                                                if (teamHas['aegislash']) return ["Aegislash is banned from Steel monotype teams."];
+                                                if (teamHas['genesect'] || teamHas['genesectdouse'] || teamHas['genesectshock'] || teamHas['genesectburn'] || teamHas['genesectchill']) return ["Genesect is banned from Steel monotype teams."];
+                                                break;
+                                        case 'Water':
+                                                if (teamHas['damprock']) return ["Damp Rock is banned from Water monotype teams."];
+                                }
+                        }
+                }
+        },
+	megarayquazabanmod: {
+		effectType: 'Rule',
+		onStart: function () {
+			this.add('rule', 'Mega Rayquaza Ban Mod: You cannot mega evolve Rayquaza');
+			for (var i = 0; i < this.sides[0].pokemon.length; i++) {
+				if (this.sides[0].pokemon[i].speciesid === 'rayquaza') this.sides[0].pokemon[i].canMegaEvo = false;
+			}
+			for (var i = 0; i < this.sides[1].pokemon.length; i++) {
+				if (this.sides[1].pokemon[i].speciesid === 'rayquaza') this.sides[1].pokemon[i].canMegaEvo = false;
 			}
 		}
 	}

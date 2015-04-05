@@ -168,6 +168,8 @@ New mechanic: Signature Pokemon:
 
   - Eelektross: Spark
 
+  - Hitmontop: Triple Kick
+
   - Kingdra: BubbleBeam (30% -1 Spe)
 
   - Galvantula: Electroweb (60 base power, 100% accuracy)
@@ -321,9 +323,9 @@ Minor move changes:
 - Sound-based moves are no longer affected by immunities (ghosts can hear
   things)
 
-- Bonemerang and Bone Rush no longer affected by immunities (you can throw
-  a bone to hit air), Bone Rush nerfed to 20 base power since it should never
-  be viable
+- Bonemerang, Bone Club and Bone Rush are no longer affected by immunities 
+  (you can throw a bone to hit birds), Bone Rush nerfed to 20 base power 
+  since it should never be viable
 
 - Wing Attack and Power Gem are now like Dual Chop: 40 base power, 2-hit
 
@@ -508,6 +510,6 @@ Specifically, differences from regular OU:
 
 - unbanned: Gengarite, Kangaskhanite, Lucarionite, Blaziken, Genesect, Mawilite, Salamencite
 
-- banned: Kyurem, Kyurem-Black, Aegislash
+- banned: Kyurem, Kyurem-Black
 
 - There is no Moody Clause or Evasion Clause

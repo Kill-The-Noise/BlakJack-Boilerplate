@@ -128,7 +128,7 @@ exports.BattleAbilities = {
 			this.heal(target.maxhp / 16);
 		},
 		onAfterDamage: function (damage, target, source, move) {
-			if (move && move.isContact && this.isWeather('hail')) {
+			if (move && move.flags['contact'] && this.isWeather('hail')) {
 				if (this.random(10) < 3) {
 					source.trySetStatus('frz', target, move);
 				}
@@ -145,7 +145,7 @@ exports.BattleAbilities = {
 	"static": {
 		inherit: true,
 		onAfterDamage: function (damage, target, source, move) {
-			if (move && move.isContact) {
+			if (move && move.flags['contact']) {
 				source.trySetStatus('par', target, move);
 			}
 		}
@@ -153,7 +153,7 @@ exports.BattleAbilities = {
 	"cutecharm": {
 		inherit: true,
 		onAfterDamage: function (damage, target, source, move) {
-			if (move && move.isContact) {
+			if (move && move.flags['contact']) {
 				source.addVolatile('Attract', target);
 			}
 		}
@@ -161,7 +161,7 @@ exports.BattleAbilities = {
 	"poisonpoint": {
 		inherit: true,
 		onAfterDamage: function (damage, target, source, move) {
-			if (move && move.isContact) {
+			if (move && move.flags['contact']) {
 				source.trySetStatus('psn', target, move);
 			}
 		}
@@ -423,7 +423,7 @@ exports.BattleAbilities = {
 	"ironfist": {
 		inherit: true,
 		onBasePower: function (basePower, attacker, defender, move) {
-			if (move.isPunchAttack) {
+			if (move.flags['punch']) {
 				return basePower * 1.33;
 			}
 		}
@@ -588,18 +588,20 @@ exports.BattleAbilities = {
 			pokemon.addVolatile('shadowtag');
 		},
 		effect: {
+			duration: 2,
 			onFoeModifyPokemon: function (pokemon) {
 				if (pokemon.ability !== 'shadowtag') {
 					pokemon.tryTrap(true);
 				}
 			}
 		},
+		onBeforeMovePriority: 15,
 		onBeforeMove: function (pokemon) {
 			pokemon.removeVolatile('shadowtag');
 		},
 		onFoeMaybeTrapPokemon: function (pokemon, source) {
 			if (!source) source = this.effectData.target;
-			if (pokemon.ability !== 'shadowtag' && !source.lastMove) {
+			if (pokemon.ability !== 'shadowtag' && !source.volatiles.shadowtag) {
 				pokemon.maybeTrapped = true;
 			}
 		}

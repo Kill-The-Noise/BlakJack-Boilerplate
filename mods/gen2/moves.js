@@ -80,6 +80,24 @@ exports.BattleMovedex = {
 		inherit: true,
 		basePower: 250
 	},
+	highjumpkick: {
+		inherit: true,
+		onMoveFail: function (target, source, move) {
+			if (target.runImmunity('Fighting')) {
+				var damage = this.getDamage(source, target, move, true);
+				this.damage(this.clampIntRange(damage / 8, 1), source, source, 'highjumpkick');
+			}
+		}
+	},
+	jumpkick: {
+		inherit: true,
+		onMoveFail: function (target, source, move) {
+			if (target.runImmunity('Fighting')) {
+				var damage = this.getDamage(source, target, move, true);
+				this.damage(this.clampIntRange(damage / 8, 1), source, source, 'jumpkick');
+			}
+		}
+	},
 	leechseed: {
 		inherit: true,
 		onHit: function () {},
@@ -157,6 +175,41 @@ exports.BattleMovedex = {
 					this.effectData.position = source.position;
 					this.effectData.damage = 2 * damage;
 				}
+			}
+		}
+	},
+	mirrormove: {
+		inherit: true,
+		onHit: function (pokemon) {
+			var noMirror = {metronome: 1, mimic: 1, mirrormove: 1, sketch: 1, sleeptalk: 1, transform: 1};
+			var foe = pokemon.side.foe.active[0];
+			if (!foe || !foe.lastMove || (!pokemon.activeTurns && !foe.moveThisTurn) || noMirror[foe.lastMove] || pokemon.moves.indexOf(foe.lastMove) !== -1) {
+				return false;
+			}
+			this.useMove(foe.lastMove, pokemon);
+		}
+	},
+	moonlight: {
+		inherit: true,
+		onHit: function (pokemon) {
+			if (this.isWeather(['sunnyday', 'desolateland'])) {
+				this.heal(pokemon.maxhp);
+			} else if (this.isWeather(['raindance', 'primordialsea', 'sandstorm', 'hail'])) {
+				this.heal(pokemon.maxhp / 4);
+			} else {
+				this.heal(pokemon.maxhp / 2);
+			}
+		}
+	},
+	morningsun: {
+		inherit: true,
+		onHit: function (pokemon) {
+			if (this.isWeather(['sunnyday', 'desolateland'])) {
+				this.heal(pokemon.maxhp);
+			} else if (this.isWeather(['raindance', 'primordialsea', 'sandstorm', 'hail'])) {
+				this.heal(pokemon.maxhp / 4);
+			} else {
+				this.heal(pokemon.maxhp / 2);
 			}
 		}
 	},
@@ -320,6 +373,18 @@ exports.BattleMovedex = {
 			},
 			onEnd: function (target) {
 				this.add('-end', target, 'Substitute');
+			}
+		}
+	},
+	synthesis: {
+		inherit: true,
+		onHit: function (pokemon) {
+			if (this.isWeather(['sunnyday', 'desolateland'])) {
+				this.heal(pokemon.maxhp);
+			} else if (this.isWeather(['raindance', 'primordialsea', 'sandstorm', 'hail'])) {
+				this.heal(pokemon.maxhp / 4);
+			} else {
+				this.heal(pokemon.maxhp / 2);
 			}
 		}
 	},

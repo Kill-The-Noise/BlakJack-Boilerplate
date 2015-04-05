@@ -17,7 +17,7 @@ exports.BattleMovedex = {
 	},
 	ancientpower: {
 		inherit: true,
-		isContact: true
+		flags: {contact: 1, protect: 1, mirror: 1}
 	},
 	assist: {
 		inherit: true,
@@ -110,7 +110,7 @@ exports.BattleMovedex = {
 	covet: {
 		inherit: true,
 		basePower: 40,
-		isContact: false
+		flags: {protect: 1, mirror: 1}
 	},
 	crabhammer: {
 		inherit: true,
@@ -131,7 +131,6 @@ exports.BattleMovedex = {
 	},
 	detect: {
 		inherit: true,
-		//desc: "",
 		priority: 3
 	},
 	dig: {
@@ -141,7 +140,7 @@ exports.BattleMovedex = {
 	disable: {
 		inherit: true,
 		accuracy: 55,
-		isBounceable: false,
+		flags: {protect: 1, mirror: 1, authentic: 1},
 		volatileStatus: 'disable',
 		effect: {
 			durationCallback: function () {
@@ -195,10 +194,7 @@ exports.BattleMovedex = {
 	doomdesire: {
 		inherit: true,
 		accuracy: 85,
-		basePower: 120,
-		onModifyMove: function (move) {
-			move.type = '???';
-		}
+		basePower: 120
 	},
 	dreameater: {
 		inherit: true,
@@ -212,7 +208,7 @@ exports.BattleMovedex = {
 	},
 	encore: {
 		inherit: true,
-		isBounceable: false,
+		flags: {protect: 1, mirror: 1, authentic: 1},
 		volatileStatus: 'encore',
 		effect: {
 			durationCallback: function () {
@@ -274,14 +270,14 @@ exports.BattleMovedex = {
 		inherit: true,
 		priority: 1
 	},
-	feintattack: {
-		inherit: true,
-		isContact: false
-	},
 	fakeout: {
 		inherit: true,
 		priority: 1,
-		isContact: false
+		flags: {protect: 1, mirror: 1}
+	},
+	feintattack: {
+		inherit: true,
+		flags: {protect: 1, mirror: 1}
 	},
 	firespin: {
 		inherit: true,
@@ -311,10 +307,8 @@ exports.BattleMovedex = {
 			}
 			return 20;
 		},
-		isViable: true,
 		pp: 15,
 		priority: 0,
-		isContact: true,
 		secondary: false,
 		target: "normal",
 		type: "Normal"
@@ -327,9 +321,23 @@ exports.BattleMovedex = {
 		inherit: true,
 		basePower: 70
 	},
+	focuspunch: {
+		inherit: true,
+		beforeMoveCallback: function () { },
+		onTry: function (pokemon) {
+			if (!pokemon.removeVolatile('focuspunch')) {
+				return;
+			}
+			if (pokemon.lastAttackedBy && pokemon.lastAttackedBy.damage && pokemon.lastAttackedBy.thisTurn) {
+				this.attrLastMove('[still]');
+				this.add('cant', pokemon, 'Focus Punch', 'Focus Punch');
+				return false;
+			}
+		}
+	},
 	foresight: {
 		inherit: true,
-		isBounceable: false
+		flags: {protect: 1, mirror: 1, authentic: 1}
 	},
 	furycutter: {
 		inherit: true,
@@ -339,10 +347,7 @@ exports.BattleMovedex = {
 		inherit: true,
 		accuracy: 90,
 		basePower: 80,
-		pp: 15,
-		onModifyMove: function (move) {
-			move.type = '???';
-		}
+		pp: 15
 	},
 	gigadrain: {
 		inherit: true,
@@ -362,26 +367,17 @@ exports.BattleMovedex = {
 		}
 	},
 	hiddenpower: {
-		num: 237,
-		accuracy: 100,
+		inherit: true,
 		basePower: 0,
 		basePowerCallback: function (pokemon) {
 			return pokemon.hpPower || 70;
 		},
 		category: "Physical",
-		id: "hiddenpower",
-		isViable: true,
-		name: "Hidden Power",
-		pp: 15,
-		priority: 0,
 		onModifyMove: function (move, pokemon) {
 			move.type = pokemon.hpType || 'Dark';
 			var specialTypes = {Fire:1, Water:1, Grass:1, Ice:1, Electric:1, Dark:1, Psychic:1, Dragon:1};
 			move.category = specialTypes[move.type] ? 'Special' : 'Physical';
-		},
-		secondary: false,
-		target: "normal",
-		type: "Normal"
+		}
 	},
 	highjumpkick: {
 		inherit: true,
@@ -390,7 +386,7 @@ exports.BattleMovedex = {
 		onMoveFail: function (target, source, move) {
 			if (target.runImmunity('Fighting')) {
 				var damage = this.getDamage(source, target, move, true);
-				this.damage(this.clampIntRange(damage / 2, 1, Math.floor(target.maxhp / 2)), source);
+				this.damage(this.clampIntRange(damage / 2, 1, Math.floor(target.maxhp / 2)), source, source, 'highjumpkick');
 			}
 		}
 	},
@@ -409,7 +405,7 @@ exports.BattleMovedex = {
 		onMoveFail: function (target, source, move) {
 			if (target.runImmunity('Fighting')) {
 				var damage = this.getDamage(source, target, move, true);
-				this.damage(this.clampIntRange(damage / 2, 1, Math.floor(target.maxhp / 2)), source);
+				this.damage(this.clampIntRange(damage / 2, 1, Math.floor(target.maxhp / 2)), source, source, 'jumpkick');
 			}
 		}
 	},
@@ -450,24 +446,39 @@ exports.BattleMovedex = {
 	},
 	mirrormove: {
 		inherit: true,
-		accuracy: true,
-		basePower: 0,
-		category: "Status",
-		pp: 20,
-		priority: 0,
-		isNotProtectable: true,
-		onTryHit: function (target) {
-			var noMirrorMove = {acupressure:1, afteryou:1, aromatherapy:1, chatter:1, conversion2:1, curse:1, doomdesire:1, feint:1, finalgambit:1, focuspunch:1, futuresight:1, gravity:1, guardsplit:1, hail:1, haze:1, healbell:1, healpulse:1, helpinghand:1, lightscreen:1, luckychant:1, mefirst:1, mimic:1, mirrorcoat:1, mirrormove:1, mist:1, mudsport:1, naturepower:1, perishsong:1, powersplit:1, psychup:1, quickguard:1, raindance:1, reflect:1, reflecttype:1, roleplay:1, safeguard:1, sandstorm:1, sketch:1, spikes:1, spitup:1, stealthrock:1, sunnyday:1, tailwind:1, taunt:1, teeterdance:1, toxicspikes:1, transform:1, watersport:1, wideguard:1};
-			if (!target.lastMove || noMirrorMove[target.lastMove] || this.getMove(target.lastMove).target === 'self') {
+		onTryHit: function () { },
+		onHit: function (pokemon) {
+			var noMirror = {assist:1, curse:1, doomdesire:1, focuspunch:1, futuresight:1, magiccoat:1, metronome:1, mimic:1, mirrormove:1, naturepower:1, psychup:1, roleplay:1, sketch:1, sleeptalk:1, spikes:1, spitup:1, taunt:1, teeterdance:1, transform:1};
+			if (!pokemon.lastAttackedBy || !pokemon.lastAttackedBy.pokemon.lastMove || noMirror[pokemon.lastAttackedBy.move] || !pokemon.lastAttackedBy.pokemon.hasMove(pokemon.lastAttackedBy.move)) {
 				return false;
 			}
+			this.useMove(pokemon.lastAttackedBy.move, pokemon);
 		},
-		onHit: function (target, source) {
-			this.useMove(this.lastMove, source);
-		},
-		secondary: false,
-		target: "normal",
-		type: "Flying"
+		target: "self"
+	},
+	moonlight: {
+		inherit: true,
+		onHit: function (pokemon) {
+			if (this.isWeather('sunnyday')) {
+				this.heal(pokemon.maxhp * 2 / 3);
+			} else if (this.isWeather(['raindance', 'sandstorm', 'hail'])) {
+				this.heal(pokemon.maxhp / 4);
+			} else {
+				this.heal(pokemon.maxhp / 2);
+			}
+		}
+	},
+	morningsun: {
+		inherit: true,
+		onHit: function (pokemon) {
+			if (this.isWeather('sunnyday')) {
+				this.heal(pokemon.maxhp * 2 / 3);
+			} else if (this.isWeather(['raindance', 'sandstorm', 'hail'])) {
+				this.heal(pokemon.maxhp / 4);
+			} else {
+				this.heal(pokemon.maxhp / 2);
+			}
+		}
 	},
 	naturepower: {
 		inherit: true,
@@ -485,7 +496,7 @@ exports.BattleMovedex = {
 	},
 	odorsleuth: {
 		inherit: true,
-		isBounceable: false
+		flags: {protect: 1, mirror: 1, authentic: 1}
 	},
 	outrage: {
 		inherit: true,
@@ -494,7 +505,7 @@ exports.BattleMovedex = {
 	},
 	overheat: {
 		inherit: true,
-		isContact: true
+		flags: {contact: 1, protect: 1, mirror: 1}
 	},
 	petaldance: {
 		inherit: true,
@@ -516,7 +527,7 @@ exports.BattleMovedex = {
 	},
 	roar: {
 		inherit: true,
-		isBounceable: false
+		flags: {mirror: 1, sound: 1, authentic: 1}
 	},
 	rockblast: {
 		inherit: true,
@@ -554,11 +565,11 @@ exports.BattleMovedex = {
 	},
 	spikes: {
 		inherit: true,
-		isBounceable: false
+		flags: {}
 	},
 	spite: {
 		inherit: true,
-		isBounceable: false,
+		flags: {protect: 1, mirror: 1, authentic: 1},
 		onHit: function (target) {
 			var roll = this.random(2, 6);
 			if (target.deductPP(target.lastMove, roll)) {
@@ -580,7 +591,6 @@ exports.BattleMovedex = {
 		pp: 1,
 		noPPBoosts: true,
 		priority: 0,
-		isContact: true,
 		beforeMoveCallback: function (pokemon) {
 			this.add('-activate', pokemon.name, 'move: Struggle');
 		},
@@ -591,6 +601,18 @@ exports.BattleMovedex = {
 		secondary: false,
 		target: "normal",
 		type: "Normal"
+	},
+	synthesis: {
+		inherit: true,
+		onHit: function (pokemon) {
+			if (this.isWeather('sunnyday')) {
+				this.heal(pokemon.maxhp * 2 / 3);
+			} else if (this.isWeather(['raindance', 'sandstorm', 'hail'])) {
+				this.heal(pokemon.maxhp / 4);
+			} else {
+				this.heal(pokemon.maxhp / 2);
+			}
+		}
 	},
 	tackle: {
 		inherit: true,
@@ -605,7 +627,7 @@ exports.BattleMovedex = {
 	},
 	taunt: {
 		inherit: true,
-		isBounceable: false,
+		flags: {protect: 1, mirror: 1, authentic: 1},
 		effect: {
 			duration: 2,
 			onStart: function (target) {
@@ -638,11 +660,11 @@ exports.BattleMovedex = {
 	},
 	tickle: {
 		inherit: true,
-		notSubBlocked: true
+		flags: {protect: 1, reflectable: 1, mirror: 1, authentic: 1}
 	},
 	torment: {
 		inherit: true,
-		isBounceable: false
+		flags: {protect: 1, mirror: 1, authentic: 1}
 	},
 	toxic: {
 		inherit: true,
@@ -672,13 +694,13 @@ exports.BattleMovedex = {
 	},
 	whirlwind: {
 		inherit: true,
-		isBounceable: false
+		flags: {mirror: 1, authentic: 1}
 	},
 	wish: {
 		inherit: true,
 		effect: {
 			duration: 2,
-			onResidualOrder: 2,
+			onResidualOrder: 0,
 			onEnd: function (side) {
 				var target = side.active[this.effectData.sourcePosition];
 				if (!target.fainted) {

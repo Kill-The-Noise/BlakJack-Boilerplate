@@ -28,7 +28,7 @@ exports.BattleStatuses = {
 			// 1-5 turns
 			this.effectData.time = this.random(2, 6);
 		},
-		onBeforeMovePriority: 2,
+		onBeforeMovePriority: 10,
 		onBeforeMove: function (pokemon, target, move) {
 			pokemon.statusData.time--;
 			if (pokemon.statusData.time <= 0) {
@@ -45,12 +45,13 @@ exports.BattleStatuses = {
 	frz: {
 		inherit: true,
 		onBeforeMove: function (pokemon, target, move) {
-			if (move.thawsUser) return;
+			if (move.flags['defrost']) return;
 			this.add('cant', pokemon, 'frz');
 			return false;
 		},
-		onAfterMoveSelf: function (pokemon, target, move) {
-			if (move.thawsUser) pokemon.cureStatus();
+		onModifyMove: function () {},
+		onAfterMoveSecondarySelf: function (pokemon, target, move) {
+			if (move.flags['defrost']) pokemon.cureStatus();
 		},
 		onResidual: function (pokemon) {
 			if (this.random(256) < 25) pokemon.cureStatus();
@@ -80,10 +81,13 @@ exports.BattleStatuses = {
 			}
 			this.damage(this.clampIntRange(pokemon.maxhp / 16, 1) * this.effectData.stage);
 		},
-		onAfterSwitchInSelf: function (pokemon) {
+		onSwitchIn: function (pokemon) {
+			// Regular poison status and damage after a switchout -> switchin.
 			this.effectData.stage = 0;
 			pokemon.setStatus('psn');
-			this.damage(pokemon.maxhp / 8);
+		},
+		onAfterSwitchInSelf: function (pokemon) {
+			this.damage(this.clampIntRange(Math.floor(pokemon.maxhp / 16), 1));
 		}
 	},
 	confusion: {

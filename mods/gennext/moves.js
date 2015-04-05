@@ -144,20 +144,7 @@ exports.BattleMovedex = {
 			},
 			onTryPrimaryHitPriority: 2,
 			onTryPrimaryHit: function (target, source, move) {
-				if (target === source) {
-					this.debug('sub bypass: self hit');
-					return;
-				}
-				if (move.notSubBlocked || move.isSoundBased) {
-					return;
-				}
-				if (move.category === 'Status') {
-					var SubBlocked = {
-						block:1, embargo:1, entrainment:1, gastroacid:1, healblock:1, healpulse:1, leechseed:1, lockon:1, meanlook:1, mindreader:1, nightmare:1, painsplit:1, psychoshift:1, simplebeam:1, skydrop:1, soak: 1, spiderweb:1, switcheroo:1, topsyturvy:1, trick:1, worryseed:1, yawn:1
-					};
-					if (move.status || move.boosts || move.volatileStatus === 'confusion' || SubBlocked[move.id]) {
-						return false;
-					}
+				if (target === source || move.flags['authentic'] || move.infiltrates) {
 					return;
 				}
 				var damage = this.getDamage(source, target, move);
@@ -201,12 +188,11 @@ exports.BattleMovedex = {
 			},
 			onTryHitPriority: 3,
 			onTryHit: function (target, source, move) {
-				if (target.volatiles.substitute) return;
+				if (target.volatiles.substitute || !move.flags['protect']) return;
 				if (move.breaksProtect) {
 					target.removeVolatile('Protect');
 					return;
 				}
-				if (move && (move.target === 'self' || move.isNotProtectable)) return;
 				this.add('-activate', target, 'Protect');
 				var lockedmove = source.getVolatile('lockedmove');
 				if (lockedmove) {
@@ -228,12 +214,11 @@ exports.BattleMovedex = {
 			},
 			onTryHitPriority: 3,
 			onTryHit: function (target, source, move) {
-				if (target.volatiles.substitute) return;
+				if (target.volatiles.substitute || !move.flags['protect'] || move.category === 'Status') return;
 				if (move.breaksProtect) {
 					target.removeVolatile('kingsshield');
 					return;
 				}
-				if (move && (move.category === 'Status' || move.isNotProtectable)) return;
 				this.add('-activate', target, 'Protect');
 				var lockedmove = source.getVolatile('lockedmove');
 				if (lockedmove) {
@@ -242,7 +227,7 @@ exports.BattleMovedex = {
 						delete source.volatiles['lockedmove'];
 					}
 				}
-				if (move.isContact) {
+				if (move.flags['contact']) {
 					this.boost({atk:-2}, source, target, this.getMove("King's Shield"));
 				}
 				return null;
@@ -265,7 +250,7 @@ exports.BattleMovedex = {
 				}
 				if (move && (move.target === 'self' || move.id === 'suckerpunch')) return;
 				this.add('-activate', target, 'move: Protect');
-				if (move.isContact) {
+				if (move.flags['contact']) {
 					this.damage(source.maxhp / 8, source, target);
 				}
 				return null;
@@ -694,8 +679,8 @@ exports.BattleMovedex = {
 		affectedByImmunities: false
 	},
 	/******************************************************************
-	Bonemerang, Bone Rush moves:
-	- not affected by immunities
+	Bonemerang, Bone Rush, Bone Club moves:
+	- not affected by Ground immunities
 	- Bone Rush nerfed to 20 base power so it's not viable on Lucario
 
 	Justification:
@@ -711,6 +696,11 @@ exports.BattleMovedex = {
 		basePower: 20,
 		affectedByImmunities: false,
 		accuracy: true
+	},
+	boneclub: {
+		inherit: true,
+		affectedByImmunities: false,
+		accuracy: 90
 	},
 	/******************************************************************
 	Relic Song:
@@ -1013,10 +1003,6 @@ exports.BattleMovedex = {
 		inherit: true,
 		accuracy: true
 	},
-	triplekick: {
-		inherit: true,
-		accuracy: true
-	},
 	watershuriken: {
 		inherit: true,
 		accuracy: true
@@ -1193,7 +1179,6 @@ exports.BattleMovedex = {
 		category: "Special",
 		isViable: true,
 		priority: 0,
-		isSoundBased: true,
 		affectedByImmunities: false,
 		onHit: function (target, source) {
 			source.side.addSideCondition('futuremove');
@@ -1208,8 +1193,7 @@ exports.BattleMovedex = {
 				moveData: {
 					basePower: 80,
 					category: "Special",
-					isSoundBased: true,
-					isNotProtectable: true,
+					flags: {},
 					affectedByImmunities: false,
 					type: 'Normal'
 				}
@@ -1384,6 +1368,13 @@ exports.BattleMovedex = {
 		onBasePower: function (power, user) {
 			if (user.template.id === 'eelektross') return this.chainModify(1.5);
 		}
+	},
+	triplekick: {
+		inherit: true,
+		onBasePower: function (power, user) {
+			if (user.template.id === 'hitmontop') return this.chainModify(1.5);
+		},
+		accuracy: true
 	},
 	bubblebeam: {
 		inherit: true,
@@ -1694,10 +1685,6 @@ exports.BattleMovedex = {
 		inherit: true,
 		accuracy: 90
 	},
-	boneclub: {
-		inherit: true,
-		accuracy: 90
-	},
 	mudbomb: {
 		inherit: true,
 		accuracy: 90
@@ -1916,6 +1903,7 @@ exports.BattleMovedex = {
 		pp: 10,
 		isViable: true,
 		priority: 0,
+		flags: {protect: 1, mirror: 1},
 		multihit: [3, 3],
 		secondary: {
 			chance: 10,

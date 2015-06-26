@@ -272,6 +272,7 @@ exports.groups = {
 			description: "They can promote to moderator and force ties",
 			inherit: '@',
 			jurisdiction: '@u',
+			roompromote: '@ ',
 			banword: true,
 			declare: true,
 			disableladder: true,
@@ -293,6 +294,7 @@ exports.groups = {
 			privateroom: true,
 			roomdesc: true,
 			roompromote: 'u',
+			rmall: true,
 			tournamentsmanagement: true
 		}, {
 			symbol: '\u2605',
